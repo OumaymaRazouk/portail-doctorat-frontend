@@ -1,0 +1,20 @@
+import { inject, Injectable } from '@angular/core';
+import { ApiService } from './api.service';
+import { environment } from '../../../../environments/environment';
+
+export interface SimpleUser {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+}
+
+@Injectable({ providedIn: 'root' })
+export class UsersService {
+  private api = inject(ApiService);
+
+  listEncadrants() {
+    // Gateway path: /users/** -> utilisateurs-service /users/**
+    return this.api.get<SimpleUser[]>(`${environment.endpoints.users}/encadrants`);
+  }
+}
