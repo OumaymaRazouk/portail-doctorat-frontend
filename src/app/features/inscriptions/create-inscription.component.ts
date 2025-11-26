@@ -57,7 +57,13 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
           <input id="anneeAcademique" name="anneeAcademique" [(ngModel)]="form.anneeAcademique" required class="input" />
         </div>
 
-        <button type="submit" class="btn">Créer</button>
+        <div class="row">
+          <label>Pièces jointes du dossier (PDF, images)</label>
+          <input type="file" multiple accept=".pdf,image/*" (change)="onFilesSelected($event)" />
+          <small *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} fichier(s) sélectionné(s)</small>
+        </div>
+
+        <button type="submit" class="btn" [disabled]="submitting || uploading">Créer</button>
       </form>
 
       <div class="footer">
@@ -90,6 +96,9 @@ export class CreateInscriptionComponent {
     specialite: '',
     anneeAcademique: ''
   };
+  selectedFiles: File[] = [];
+  submitting = false;
+  uploading = false;
 
   constructor(
     private service: InscriptionService,
@@ -116,19 +125,49 @@ export class CreateInscriptionComponent {
   }
 
   onSubmit() {
+    if (this.submitting || this.uploading) return;
     if (!this.isValidAcademicYear(this.form.anneeAcademique)) {
       alert("Format d'année académique invalide. Utilisez AAAA-AAAA (ex: 2025-2026).");
       return;
     }
+    this.submitting = true;
     this.service.create(this.form).subscribe({
-      next: () => {
-        alert('Inscription créée avec succès');
-        this.router.navigateByUrl('/dashboard/doctorant');
+      next: (dto) => {
+        const id = dto?.id;
+        if (id && this.selectedFiles.length > 0) {
+          this.uploading = true;
+          this.service.uploadAttachments(id, this.selectedFiles).subscribe({
+            next: () => {
+              this.uploading = false;
+              this.submitting = false;
+              alert('Inscription créée et documents téléversés avec succès');
+              this.router.navigateByUrl('/dashboard/doctorant');
+            },
+            error: (e) => {
+              this.uploading = false;
+              this.submitting = false;
+              console.error(e);
+              alert("Inscription créée, mais échec du téléversement des documents");
+              this.router.navigateByUrl('/dashboard/doctorant');
+            }
+          });
+        } else {
+          this.submitting = false;
+          alert('Inscription créée avec succès');
+          this.router.navigateByUrl('/dashboard/doctorant');
+        }
       },
       error: (err) => {
+        this.submitting = false;
         console.error(err);
         alert("Erreur lors de la création de l'inscription");
       },
     });
+  }
+
+  onFilesSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const files = input.files ? Array.from(input.files) : [];
+    this.selectedFiles = files;
   }
 }

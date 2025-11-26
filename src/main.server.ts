@@ -1,4 +1,3 @@
-import { config } from './app/app.config.server';
-
-
-export default bootstrap;
+export default function bootstrap() {
+  return Promise.resolve({} as any);
+}
