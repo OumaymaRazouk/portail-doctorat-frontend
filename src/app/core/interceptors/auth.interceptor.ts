@@ -6,11 +6,9 @@ import { catchError, switchMap, throwError } from 'rxjs';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Ne pas ajouter d'Authorization pour les envois FormData (uploads)
   const isFormData = typeof FormData !== 'undefined' && (req as any).body instanceof FormData;
-  // Et ne pas l'ajouter pour la création d'inscription via gateway
-  const isCreateInscription = req.method === 'POST' && req.url.includes('/inscription/inscriptions') && !req.url.endsWith('/attachments');
   const auth = inject(AuthService);
   const token = auth.accessToken;
-  const cloned = (token && !isFormData && !isCreateInscription)
+  const cloned = (token && !isFormData)
     ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
     : req;
 

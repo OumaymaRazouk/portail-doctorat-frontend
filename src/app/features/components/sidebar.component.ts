@@ -12,13 +12,13 @@ import { HasRoleDirective } from '../../shared/directives/has-role.directive';
       <li class="nav-item" *hasRole="'DOCTORANT'">
         <a routerLink="/dashboard/doctorant" class="nav-link">Espace Doctorant</a>
       </li>
-      <li class="nav-item" *hasRole="'ENCADRANT'">
-        <a routerLink="/dashboard/encadrant" class="nav-link">Espace Encadrant</a>
+      <li class="nav-item" *hasRole="['DIRECTEUR','SUPERADMIN']">
+        <a routerLink="/dashboard/encadrant" class="nav-link">Espace Directeur</a>
       </li>
-      <li class="nav-item" *hasRole="'ADMIN'">
-        <a routerLink="/dashboard/admin" class="nav-link">Espace Admin</a>
+      <li class="nav-item" *hasRole="['PERSONNEL_ADMINISTRATIF','SUPERADMIN']">
+        <a routerLink="/dashboard/admin" class="nav-link">Espace Administratif</a>
       </li>
-      <li class="nav-item" *hasRole="'SUPER_ADMIN'">
+      <li class="nav-item" *hasRole="'SUPERADMIN'">
         <a routerLink="/dashboard/super-admin" class="nav-link">Espace Super Admin</a>
       </li>
     </ul>

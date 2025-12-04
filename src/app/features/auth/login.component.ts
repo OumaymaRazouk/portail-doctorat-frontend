@@ -35,13 +35,13 @@ export class LoginComponent {
       next: (res) => {
         this.auth.saveTokens(res);
         const roles = this.auth.rolesFromJwt;
-        
-        // Redirect based on role
-        if (roles.includes('SUPER_ADMIN')) {
+
+        // Redirect en fonction du rôle principal
+        if (roles.includes('SUPERADMIN')) {
           this.router.navigateByUrl('/dashboard/super-admin');
-        } else if (roles.includes('ADMIN')) {
+        } else if (roles.includes('PERSONNEL_ADMINISTRATIF')) {
           this.router.navigateByUrl('/dashboard/admin');
-        } else if (roles.includes('ENCADRANT')) {
+        } else if (roles.includes('DIRECTEUR')) {
           this.router.navigateByUrl('/dashboard/encadrant');
         } else {
           this.router.navigateByUrl('/dashboard/doctorant');

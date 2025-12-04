@@ -66,9 +66,9 @@ import { AuthService } from '../../core/services/auth.service';
           <label for="roles">Type de compte</label>
           <select id="roles" [(ngModel)]="form.roles" name="roles" class="form-input">
             <option [ngValue]="['DOCTORANT']">Doctorant</option>
-            <option [ngValue]="['ENCADRANT']">Encadrant</option>
-            <option [ngValue]="['ADMIN']">Administratif</option>
-            <option [ngValue]="['SUPER_ADMIN']">Super Admin</option>
+            <option [ngValue]="['DIRECTEUR']">Directeur de thèse</option>
+            <option [ngValue]="['PERSONNEL_ADMINISTRATIF']">Personnel administratif</option>
+            <option [ngValue]="['SUPERADMIN']">Super Admin</option>
           </select>
         </div>
         

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { LayoutComponent } from '../components/layout.component';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { InscriptionService, InscriptionDTO, InscriptionStatus } from '../../core/services/inscription.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -35,6 +35,8 @@ import { AuthService } from '../../core/services/auth.service';
             <td><span class="badge" [class.ok]="i.status==='VALIDE'" [class.warn]="i.status==='EN_ATTENTE_ADMIN' || i.status==='EN_ATTENTE_DIRECTEUR'" [class.err]="i.status==='REJETE'">{{ i.status }}</span></td>
             <td>
               <button class="btn small" (click)="submit(i)" *ngIf="i.status==='BROUILLON'">Soumettre</button>
+              <button class="btn small secondary" (click)="edit(i)" *ngIf="i.status==='BROUILLON'">Modifier</button>
+              <button class="btn small danger" (click)="remove(i)" *ngIf="i.status==='BROUILLON'">Supprimer</button>
             </td>
           </tr>
         </tbody>
@@ -45,6 +47,8 @@ import { AuthService } from '../../core/services/auth.service';
     .actions { display:flex; gap:8px; margin-bottom: 16px; }
     .btn { background:#4f46e5; color:#fff; padding:8px 12px; border-radius:8px; text-decoration:none; }
     .btn.secondary { background:#0ea5e9; }
+    .btn.danger { background:#dc2626; }
+    .btn.danger:hover { background:#b91c1c; }
     .btn.small { padding:6px 10px; font-size: 13px; }
     .table { width:100%; border-collapse:collapse; background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
     th, td { padding:10px 12px; border-bottom:1px solid #e5e7eb; }
@@ -59,7 +63,7 @@ export class DoctorantDashboardComponent {
   inscriptions: (InscriptionDTO & { type?: 'INSCRIPTION'|'REINSCRIPTION' })[] = [];
   loading = false;
 
-  constructor(private service: InscriptionService, private auth: AuthService) {
+  constructor(private service: InscriptionService, private auth: AuthService, private router: Router) {
     this.load();
   }
 
@@ -82,5 +86,19 @@ export class DoctorantDashboardComponent {
       next: () => this.load(),
       error: err => console.error(err)
     })
+  }
+
+  edit(i: InscriptionDTO) {
+    if (!i.id) return;
+    this.router.navigate(['/inscriptions', i.id, 'edit']);
+  }
+
+  remove(i: InscriptionDTO) {
+    if (!i.id) return;
+    if (!confirm('Voulez-vous vraiment supprimer cette candidature ?')) return;
+    this.service.delete(i.id).subscribe({
+      next: () => this.load(),
+      error: err => console.error(err)
+    });
   }
 }

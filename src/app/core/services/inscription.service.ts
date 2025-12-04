@@ -10,6 +10,18 @@ export interface CreateInscriptionRequest {
   laboratoire: string;
   specialite: string;
   anneeAcademique: string; // ex: 2025-2026
+
+  nom: string;
+  cin: string;
+  telephone: string;
+  emailContact: string;
+  cne: string;
+  dateNaissance: string;
+  lieuNaissance: string;
+  nationalite: string;
+  adresse: string;
+  situationFamiliale: string;
+  resumeThese: string;
 }
 
 export interface InscriptionDTO {
@@ -21,6 +33,17 @@ export interface InscriptionDTO {
   laboratoire: string;
   specialite: string;
   anneeAcademique: string;
+  nom?: string;
+  cin?: string;
+  telephone?: string;
+  emailContact?: string;
+  cne?: string;
+  dateNaissance?: string;
+  lieuNaissance?: string;
+  nationalite?: string;
+  adresse?: string;
+  situationFamiliale?: string;
+  resumeThese?: string;
   status?: InscriptionStatus;
 }
 
@@ -56,6 +79,14 @@ export class InscriptionService {
     return this.api.post<InscriptionDTO>(`${this.base}/${id}/submit`, {});
   }
 
+  update(id: string, dto: CreateInscriptionRequest) {
+    return this.api.put<InscriptionDTO>(`${this.base}/${id}`, dto);
+  }
+
+  delete(id: string) {
+    return this.api.delete<void>(`${this.base}/${id}`);
+  }
+
   directorApprove(id: string) {
     return this.api.post<InscriptionDTO>(`${this.base}/${id}/director-approve`, {});
   }
@@ -70,9 +101,10 @@ export class InscriptionService {
 
   uploadAttachments(id: string, files: File[]) {
     const fd = new FormData();
-    for (const f of (files || [])) {
-      fd.append('files', f);
-    }
+    if (files && files[0]) fd.append('diplome', files[0]);
+    if (files && files[1]) fd.append('cv', files[1]);
+    if (files && files[2]) fd.append('lettreMotivation', files[2]);
+    if (files && files[3]) fd.append('cin', files[3]);
     return this.api.post<InscriptionDTO>(`${this.base}/${id}/attachments`, fd);
   }
 }

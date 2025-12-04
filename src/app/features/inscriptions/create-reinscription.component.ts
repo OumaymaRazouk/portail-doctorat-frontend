@@ -22,6 +22,56 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
         </div>
 
         <div class="row">
+          <label for="nom">Nom complet</label>
+          <input id="nom" name="nom" [(ngModel)]="form.nom" required class="input" />
+        </div>
+
+        <div class="row">
+          <label for="cin">CIN / Carte d'identité</label>
+          <input id="cin" name="cin" [(ngModel)]="form.cin" required class="input" />
+        </div>
+
+        <div class="row">
+          <label for="telephone">Téléphone</label>
+          <input id="telephone" name="telephone" [(ngModel)]="form.telephone" required class="input" />
+        </div>
+
+        <div class="row">
+          <label for="emailContact">Email</label>
+          <input id="emailContact" name="emailContact" [(ngModel)]="form.emailContact" required class="input" />
+        </div>
+
+        <div class="row">
+          <label for="cne">CNE (Code National Étudiant)</label>
+          <input id="cne" name="cne" [(ngModel)]="form.cne" required class="input" />
+        </div>
+
+        <div class="row">
+          <label for="dateNaissance">Date de naissance</label>
+          <input id="dateNaissance" name="dateNaissance" type="date" [(ngModel)]="form.dateNaissance" required class="input" />
+        </div>
+
+        <div class="row">
+          <label for="lieuNaissance">Lieu de naissance</label>
+          <input id="lieuNaissance" name="lieuNaissance" [(ngModel)]="form.lieuNaissance" required class="input" />
+        </div>
+
+        <div class="row">
+          <label for="nationalite">Nationalité</label>
+          <input id="nationalite" name="nationalite" [(ngModel)]="form.nationalite" required class="input" />
+        </div>
+
+        <div class="row">
+          <label for="adresse">Adresse complète</label>
+          <input id="adresse" name="adresse" [(ngModel)]="form.adresse" required class="input" />
+        </div>
+
+        <div class="row">
+          <label for="situationFamiliale">Situation familiale</label>
+          <input id="situationFamiliale" name="situationFamiliale" [(ngModel)]="form.situationFamiliale" required class="input" />
+        </div>
+
+        <div class="row">
           <label for="directeurId">Directeur</label>
           <select id="directeurId" name="directeurId" [(ngModel)]="form.directeurId" required class="input">
             <option value="" disabled selected>-- Sélectionner un encadrant --</option>
@@ -43,6 +93,11 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
         </div>
 
         <div class="row">
+          <label for="resumeThese">Résumé de la thèse (max 500 mots)</label>
+          <textarea id="resumeThese" name="resumeThese" [(ngModel)]="form.resumeThese" maxlength="500" rows="4" class="input"></textarea>
+        </div>
+
+        <div class="row">
           <label for="laboratoire">Laboratoire</label>
           <input id="laboratoire" name="laboratoire" [(ngModel)]="form.laboratoire" required class="input" />
         </div>
@@ -58,9 +113,23 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
         </div>
 
         <div class="row">
-          <label>Pièces jointes du dossier (PDF, images)</label>
-          <input type="file" multiple accept=".pdf,image/*" (change)="onFilesSelected($event)" />
-          <small *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} fichier(s) sélectionné(s)</small>
+          <label>Diplôme Master / équivalent (PDF/JPG)</label>
+          <input type="file" accept=".pdf,image/*" (change)="onDiplomeSelected($event)" />
+        </div>
+
+        <div class="row">
+          <label>CV (PDF/JPG)</label>
+          <input type="file" accept=".pdf,image/*" (change)="onCvSelected($event)" />
+        </div>
+
+        <div class="row">
+          <label>Lettre de motivation (PDF/JPG)</label>
+          <input type="file" accept=".pdf,image/*" (change)="onLettreSelected($event)" />
+        </div>
+
+        <div class="row">
+          <label>Photocopie CIN (PDF/JPG)</label>
+          <input type="file" accept=".pdf,image/*" (change)="onCinSelected($event)" />
         </div>
 
         <div class="row" style="display:flex; gap:8px; align-items:center;">
@@ -99,9 +168,23 @@ export class CreateReinscriptionComponent {
     sujetThese: '',
     laboratoire: '',
     specialite: '',
-    anneeAcademique: ''
+    anneeAcademique: '',
+    nom: '',
+    cin: '',
+    telephone: '',
+    emailContact: '',
+    cne: '',
+    dateNaissance: '',
+    lieuNaissance: '',
+    nationalite: '',
+    adresse: '',
+    situationFamiliale: '',
+    resumeThese: ''
   };
-  selectedFiles: File[] = [];
+  diplomeFile?: File;
+  cvFile?: File;
+  lettreMotivationFile?: File;
+  cinFile?: File;
   submitting = false;
   uploading = false;
 
@@ -137,9 +220,14 @@ export class CreateReinscriptionComponent {
     this.service.createReinscription(this.form).subscribe({
       next: (dto) => {
         const id = dto?.id;
-        if (id && this.selectedFiles.length > 0) {
+        if (id && (this.diplomeFile || this.cvFile || this.lettreMotivationFile || this.cinFile)) {
           this.uploading = true;
-          this.service.uploadAttachments(id, this.selectedFiles).subscribe({
+          const files: File[] = [];
+          if (this.diplomeFile) files[0] = this.diplomeFile;
+          if (this.cvFile) files[1] = this.cvFile;
+          if (this.lettreMotivationFile) files[2] = this.lettreMotivationFile;
+          if (this.cinFile) files[3] = this.cinFile;
+          this.service.uploadAttachments(id, files).subscribe({
             next: () => {
               this.uploading = false; this.submitting = false;
               alert('Réinscription créée et documents téléversés avec succès');
@@ -182,7 +270,18 @@ export class CreateReinscriptionComponent {
           sujetThese: dto.sujetThese,
           laboratoire: dto.laboratoire,
           specialite: dto.specialite,
-          anneeAcademique: nextYear
+          anneeAcademique: nextYear,
+          nom: dto.nom || '',
+          cin: dto.cin || '',
+          telephone: dto.telephone || '',
+          emailContact: dto.emailContact || '',
+          cne: dto.cne || '',
+          dateNaissance: dto.dateNaissance || '',
+          lieuNaissance: dto.lieuNaissance || '',
+          nationalite: dto.nationalite || '',
+          adresse: dto.adresse || '',
+          situationFamiliale: dto.situationFamiliale || '',
+          resumeThese: dto.resumeThese || ''
         };
       },
       error: (err) => {
@@ -192,9 +291,23 @@ export class CreateReinscriptionComponent {
     })
   }
 
-  onFilesSelected(event: Event) {
+  onDiplomeSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    const files = input.files ? Array.from(input.files) : [];
-    this.selectedFiles = files;
+    this.diplomeFile = input.files && input.files.length > 0 ? input.files[0] : undefined;
+  }
+
+  onCvSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.cvFile = input.files && input.files.length > 0 ? input.files[0] : undefined;
+  }
+
+  onLettreSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.lettreMotivationFile = input.files && input.files.length > 0 ? input.files[0] : undefined;
+  }
+
+  onCinSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.cinFile = input.files && input.files.length > 0 ? input.files[0] : undefined;
   }
 }
