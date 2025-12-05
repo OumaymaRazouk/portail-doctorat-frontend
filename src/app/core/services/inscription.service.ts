@@ -33,6 +33,7 @@ export interface InscriptionDTO {
   laboratoire: string;
   specialite: string;
   anneeAcademique: string;
+  type?: 'INSCRIPTION' | 'REINSCRIPTION';
   nom?: string;
   cin?: string;
   telephone?: string;
@@ -44,6 +45,7 @@ export interface InscriptionDTO {
   adresse?: string;
   situationFamiliale?: string;
   resumeThese?: string;
+  motifRejet?: string;
   status?: InscriptionStatus;
 }
 
@@ -75,6 +77,14 @@ export class InscriptionService {
     return this.api.get<InscriptionDTO[]>(`${this.base}/doctorants/${doctorantId}`);
   }
 
+  listByDirecteur(directeurId: string) {
+    return this.api.get<InscriptionDTO[]>(`${this.base}/directeurs/${directeurId}`);
+  }
+
+  listPendingForAdmin() {
+    return this.api.get<InscriptionDTO[]>(`${this.base}/admin/en-attente`);
+  }
+
   submit(id: string) {
     return this.api.post<InscriptionDTO>(`${this.base}/${id}/submit`, {});
   }
@@ -95,8 +105,11 @@ export class InscriptionService {
     return this.api.post<InscriptionDTO>(`${this.base}/${id}/admin-approve`, {});
   }
 
-  reject(id: string) {
-    return this.api.post<InscriptionDTO>(`${this.base}/${id}/reject`, {});
+  reject(id: string, motif?: string) {
+    const url = motif
+      ? `${this.base}/${id}/reject?motif=${encodeURIComponent(motif)}`
+      : `${this.base}/${id}/reject`;
+    return this.api.post<InscriptionDTO>(url, {});
   }
 
   uploadAttachments(id: string, files: File[]) {

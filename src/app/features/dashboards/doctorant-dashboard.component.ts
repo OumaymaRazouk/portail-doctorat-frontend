@@ -25,6 +25,7 @@ import { AuthService } from '../../core/services/auth.service';
             <th>Type</th>
             <th>Année</th>
             <th>Statut</th>
+            <th>Motif rejet</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -33,10 +34,12 @@ import { AuthService } from '../../core/services/auth.service';
             <td>{{ i.type || 'INSCRIPTION' }}</td>
             <td>{{ i.anneeAcademique }}</td>
             <td><span class="badge" [class.ok]="i.status==='VALIDE'" [class.warn]="i.status==='EN_ATTENTE_ADMIN' || i.status==='EN_ATTENTE_DIRECTEUR'" [class.err]="i.status==='REJETE'">{{ i.status }}</span></td>
+            <td>{{ i.status === 'REJETE' ? i.motifRejet : '' }}</td>
             <td>
               <button class="btn small" (click)="submit(i)" *ngIf="i.status==='BROUILLON'">Soumettre</button>
               <button class="btn small secondary" (click)="edit(i)" *ngIf="i.status==='BROUILLON'">Modifier</button>
               <button class="btn small danger" (click)="remove(i)" *ngIf="i.status==='BROUILLON'">Supprimer</button>
+              <button class="btn small secondary" (click)="details(i)">Détails</button>
             </td>
           </tr>
         </tbody>
@@ -100,5 +103,14 @@ export class DoctorantDashboardComponent {
       next: () => this.load(),
       error: err => console.error(err)
     });
+  }
+
+  details(i: InscriptionDTO) {
+    const lignes: string[] = [];
+    lignes.push(`Type: ${i.type || 'INSCRIPTION'}`);
+    if (i.anneeAcademique) lignes.push(`Année: ${i.anneeAcademique}`);
+    if (i.status) lignes.push(`Statut: ${i.status}`);
+    if (i.motifRejet) lignes.push(`Motif du rejet: ${i.motifRejet}`);
+    alert(lignes.join('\n'));
   }
 }

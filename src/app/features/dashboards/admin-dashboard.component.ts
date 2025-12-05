@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../components/layout.component';
-import { InscriptionService } from '../../core/services/inscription.service';
+import { InscriptionService, InscriptionDTO } from '../../core/services/inscription.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -13,40 +13,72 @@ import { InscriptionService } from '../../core/services/inscription.service';
   template: `
     <app-layout title="Espace Administratif">
       <div class="card">
-        <h3>Actions rapides</h3>
-        <div class="row">
-          <input [(ngModel)]="inscriptionId" placeholder="ID inscription..." />
-          <button class="btn" (click)="approve()" [disabled]="loading || !inscriptionId">Valider (Admin)</button>
-          <button class="btn" (click)="reject()" [disabled]="loading || !inscriptionId">Rejeter</button>
-        </div>
-        <div *ngIf="message">{{ message }}</div>
-        <div *ngIf="error">{{ error }}</div>
+        <h3>Dossiers en attente de validation</h3>
+        <div *ngIf="loading">Chargement...</div>
+        <div *ngIf="!loading && inscriptions.length === 0">Aucun dossier en attente.</div>
+        <table *ngIf="!loading && inscriptions.length > 0" class="table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Doctorant</th>
+              <th>Année</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let i of inscriptions">
+              <td>{{ i.type || 'INSCRIPTION' }}</td>
+              <td>{{ i.doctorantId }}</td>
+              <td>{{ i.anneeAcademique }}</td>
+              <td><span class="badge" [class.ok]="i.status==='VALIDE'" [class.warn]="i.status==='EN_ATTENTE_ADMIN' || i.status==='EN_ATTENTE_DIRECTEUR'" [class.err]="i.status==='REJETE'">{{ i.status }}</span></td>
+              <td>
+                <button class="btn small" (click)="approve(i)" *ngIf="i.status==='EN_ATTENTE_ADMIN'">Valider</button>
+                <button class="btn small danger" (click)="reject(i)" *ngIf="i.status==='EN_ATTENTE_ADMIN'">Rejeter</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="message" class="msg">{{ message }}</div>
+        <div *ngIf="error" class="err">{{ error }}</div>
       </div>
     </app-layout>
   `
 })
 export class AdminDashboardComponent {
-  inscriptionId = '';
+  inscriptions: InscriptionDTO[] = [];
   loading = false;
   message = '';
   error = '';
 
-  constructor(private service: InscriptionService) {}
+  constructor(private service: InscriptionService) {
+    this.load();
+  }
 
-  approve() {
-    if (!this.inscriptionId) return;
+  private load() {
     this.loading = true; this.message = ''; this.error = '';
-    this.service.adminApprove(this.inscriptionId).subscribe({
-      next: () => { this.loading = false; this.message = "Demande validée par l'administration."; },
+    this.service.listPendingForAdmin().subscribe({
+      next: list => { this.inscriptions = list; this.loading = false; },
+      error: e => { this.loading = false; this.error = e?.error?.message || 'Erreur'; }
+    });
+  }
+
+  approve(i: InscriptionDTO) {
+    if (!i.id) return;
+    this.loading = true; this.message = ''; this.error = '';
+    this.service.adminApprove(i.id).subscribe({
+      next: () => { this.loading = false; this.message = "Demande validée par l'administration."; this.load(); },
       error: (e) => { this.loading = false; this.error = e?.error?.message || 'Erreur'; }
     });
   }
 
-  reject() {
-    if (!this.inscriptionId) return;
+  reject(i: InscriptionDTO) {
+    if (!i.id) return;
+    const motif = prompt('Motif du rejet :');
+    if (motif === null) return;
     this.loading = true; this.message = ''; this.error = '';
-    this.service.reject(this.inscriptionId).subscribe({
-      next: () => { this.loading = false; this.message = 'Demande rejetée.'; },
+    this.service.reject(i.id, motif || undefined).subscribe({
+      next: () => { this.loading = false; this.message = 'Demande rejetée.'; this.load(); },
       error: (e) => { this.loading = false; this.error = e?.error?.message || 'Erreur'; }
     });
   }
