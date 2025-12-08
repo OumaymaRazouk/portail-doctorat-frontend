@@ -6,6 +6,7 @@ export const environment = {
     // Routes exposées par le gateway (voir gateway-service.yaml)
     auth: '/users/auth',
     users: '/users/users',
-    inscriptions: '/inscription/inscriptions'
+    inscriptions: '/inscription/inscriptions',
+    soutenanceGraphql: '/soutenance/graphql'
   }
 };

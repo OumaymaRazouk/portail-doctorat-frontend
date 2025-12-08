@@ -22,6 +22,10 @@ export interface CreateInscriptionRequest {
   adresse: string;
   situationFamiliale: string;
   resumeThese: string;
+  rapportAvancement?: string;
+  publicationsN1?: string;
+  communicationsN1?: string;
+  heuresFormationCumulees?: string;
 }
 
 export interface InscriptionDTO {
@@ -45,8 +49,13 @@ export interface InscriptionDTO {
   adresse?: string;
   situationFamiliale?: string;
   resumeThese?: string;
+  rapportAvancement?: string;
+  publicationsN1?: string;
+  communicationsN1?: string;
+  heuresFormationCumulees?: string;
   motifRejet?: string;
   status?: InscriptionStatus;
+  dateDemande?: string;
 }
 
 export type InscriptionStatus = 'BROUILLON' | 'EN_ATTENTE_ADMIN' | 'EN_ATTENTE_DIRECTEUR' | 'VALIDE' | 'REJETE';
@@ -119,5 +128,13 @@ export class InscriptionService {
     if (files && files[2]) fd.append('lettreMotivation', files[2]);
     if (files && files[3]) fd.append('cin', files[3]);
     return this.api.post<InscriptionDTO>(`${this.base}/${id}/attachments`, fd);
+  }
+
+  listAttachments(id: string) {
+    return this.api.get<string[]>(`${this.base}/${id}/attachments`);
+  }
+
+  buildAttachmentUrl(id: string, fileName: string) {
+    return `${this.base}/${id}/attachments/${encodeURIComponent(fileName)}`;
   }
 }

@@ -10,6 +10,10 @@ import { SuperAdminDashboardComponent } from './features/dashboards/super-admin-
 import { CreateInscriptionComponent } from './features/inscriptions/create-inscription.component';
 import { CreateReinscriptionComponent } from './features/inscriptions/create-reinscription.component';
 import { EditInscriptionComponent } from './features/inscriptions/edit-inscription.component';
+import { InscriptionDetailComponent } from './features/inscriptions/inscription-detail.component';
+import { SoutenanceDoctorantComponent } from './features/soutenances/soutenance-doctorant.component';
+import { SoutenanceDirecteurComponent } from './features/soutenances/soutenance-directeur.component';
+import { SoutenanceAdminComponent } from './features/soutenances/soutenance-admin.component';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { Role } from './core/models/auth.models';
@@ -27,7 +31,11 @@ export const routes: Routes = [
 
   { path: 'inscriptions/nouvelle', component: CreateInscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
   { path: 'inscriptions/:id/edit', component: EditInscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
+  { path: 'inscriptions/:id/consultation', component: InscriptionDetailComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT','DIRECTEUR','PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
   { path: 'reinscriptions/nouvelle', component: CreateReinscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
+  { path: 'soutenances/mine', component: SoutenanceDoctorantComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
+  { path: 'soutenances/directeur', component: SoutenanceDirecteurComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DIRECTEUR','SUPERADMIN'] as Role[] } },
+  { path: 'soutenances/admin', component: SoutenanceAdminComponent, canActivate: [authGuard, roleGuard], data: { roles: ['PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
 
   { path: '**', component: NotFoundComponent }
 ];

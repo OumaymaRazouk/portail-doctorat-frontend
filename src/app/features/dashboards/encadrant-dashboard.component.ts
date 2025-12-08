@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../components/layout.component';
 import { InscriptionService, InscriptionDTO } from '../../core/services/inscription.service';
 import { AuthService } from '../../core/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-encadrant-dashboard',
@@ -36,6 +37,7 @@ import { AuthService } from '../../core/services/auth.service';
               <td>
                 <button class="btn small" (click)="approve(i)" *ngIf="i.status==='EN_ATTENTE_DIRECTEUR'">Valider</button>
                 <button class="btn small danger" (click)="reject(i)" *ngIf="i.status==='EN_ATTENTE_DIRECTEUR'">Rejeter</button>
+                <button class="btn small secondary" (click)="details(i)">Détails</button>
               </td>
             </tr>
           </tbody>
@@ -52,7 +54,7 @@ export class EncadrantDashboardComponent {
   message = '';
   error = '';
 
-  constructor(private service: InscriptionService, private auth: AuthService) {
+  constructor(private service: InscriptionService, private auth: AuthService, private router: Router) {
     this.load();
   }
 
@@ -87,5 +89,10 @@ export class EncadrantDashboardComponent {
       next: () => { this.loading = false; this.message = 'Demande rejetée.'; this.load(); },
       error: (e) => { this.loading = false; this.error = e?.error?.message || 'Erreur'; }
     });
+  }
+
+  details(i: InscriptionDTO) {
+    if (!i.id) return;
+    this.router.navigate(['/inscriptions', i.id, 'consultation']);
   }
 }

@@ -106,11 +106,7 @@ export class DoctorantDashboardComponent {
   }
 
   details(i: InscriptionDTO) {
-    const lignes: string[] = [];
-    lignes.push(`Type: ${i.type || 'INSCRIPTION'}`);
-    if (i.anneeAcademique) lignes.push(`Année: ${i.anneeAcademique}`);
-    if (i.status) lignes.push(`Statut: ${i.status}`);
-    if (i.motifRejet) lignes.push(`Motif du rejet: ${i.motifRejet}`);
-    alert(lignes.join('\n'));
+    if (!i.id) return;
+    this.router.navigate(['/inscriptions', i.id, 'consultation']);
   }
 }

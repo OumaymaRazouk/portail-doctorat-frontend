@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../components/layout.component';
 import { InscriptionService, InscriptionDTO } from '../../core/services/inscription.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -35,6 +36,7 @@ import { InscriptionService, InscriptionDTO } from '../../core/services/inscript
               <td>
                 <button class="btn small" (click)="approve(i)" *ngIf="i.status==='EN_ATTENTE_ADMIN'">Valider</button>
                 <button class="btn small danger" (click)="reject(i)" *ngIf="i.status==='EN_ATTENTE_ADMIN'">Rejeter</button>
+                <button class="btn small secondary" (click)="details(i)">Détails</button>
               </td>
             </tr>
           </tbody>
@@ -51,7 +53,7 @@ export class AdminDashboardComponent {
   message = '';
   error = '';
 
-  constructor(private service: InscriptionService) {
+  constructor(private service: InscriptionService, private router: Router) {
     this.load();
   }
 
@@ -81,5 +83,10 @@ export class AdminDashboardComponent {
       next: () => { this.loading = false; this.message = 'Demande rejetée.'; this.load(); },
       error: (e) => { this.loading = false; this.error = e?.error?.message || 'Erreur'; }
     });
+  }
+
+  details(i: InscriptionDTO) {
+    if (!i.id) return;
+    this.router.navigate(['/inscriptions', i.id, 'consultation']);
   }
 }
