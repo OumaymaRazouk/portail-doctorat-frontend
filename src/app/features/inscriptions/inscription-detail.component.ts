@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LayoutComponent } from '../components/layout.component';
 import { InscriptionDTO, InscriptionService } from '../../core/services/inscription.service';
 
 @Component({
   selector: 'app-inscription-detail',
   standalone: true,
-  imports: [LayoutComponent, CommonModule],
+  imports: [LayoutComponent, CommonModule, RouterLink],
   template: `
     <app-layout title="Détail du dossier">
       <div class="card" *ngIf="loading">Chargement...</div>
@@ -76,7 +76,7 @@ import { InscriptionDTO, InscriptionService } from '../../core/services/inscript
           <div *ngIf="!attachmentsLoading && !attachmentsError && attachments.length === 0">Aucune pièce jointe trouvée.</div>
           <ul *ngIf="!attachmentsLoading && !attachmentsError && attachments.length > 0" class="attachments">
             <li *ngFor="let f of attachments">
-              <a [href]="attachmentLink(f)" target="_blank" rel="noopener">{{ f }}</a>
+              <a class="link" href="#" (click)="openAttachment(f, $event)">{{ f }}</a>
             </li>
           </ul>
         </div>
@@ -84,7 +84,13 @@ import { InscriptionDTO, InscriptionService } from '../../core/services/inscript
     </app-layout>
   `,
   styles: [`
-    .card { background:#fff; border-radius:12px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,0.05); margin-bottom:16px; }
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 1.5rem 1.75rem;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 1.25rem;
+    }
     .card.error { border:1px solid #fecaca; color:#991b1b; background:#fef2f2; }
     .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
     .section { margin-top:12px; }
@@ -93,11 +99,24 @@ import { InscriptionDTO, InscriptionService } from '../../core/services/inscript
     .col-2 { grid-column:span 2; }
     .label { display:block; font-size:12px; color:#6b7280; margin-bottom:2px; }
     .value { font-size:14px; color:#111827; word-break:break-word; }
-    .btn { background:#4f46e5; color:#fff; border-radius:8px; border:0; padding:6px 10px; cursor:pointer; font-size:13px; }
-    .btn.secondary { background:#0ea5e9; }
-    .btn.secondary:hover { background:#0284c7; }
+    .btn {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border-radius: 999px;
+      border:0;
+      padding:6px 14px;
+      cursor:pointer;
+      font-size:13px;
+      font-weight: 500;
+      transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    }
+    .btn.secondary { background: var(--info); }
+    .btn.secondary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+    }
     .attachments { list-style:none; padding-left:0; margin:0; display:flex; flex-direction:column; gap:4px; }
-    .attachments a { color:#2563eb; text-decoration:underline; font-size:14px; }
+    .attachments .link { background:none; border:0; padding:0; color:#2563eb; text-decoration:underline; font-size:14px; cursor:pointer; text-align:left; }
   `]
 })
 export class InscriptionDetailComponent {
@@ -156,12 +175,18 @@ export class InscriptionDetailComponent {
     });
   }
 
-  attachmentLink(name: string): string {
-    if (!this.inscriptionId) return '#';
-    return this.service.buildAttachmentUrl(this.inscriptionId, name);
-  }
-
   goBack() {
     this.location.back();
+  }
+
+  openAttachment(fileName: string, event: MouseEvent) {
+    event.preventDefault();
+    const id = this.inscription?.id;
+    if (!id) {
+      return;
+    }
+    const payload = encodeURIComponent(JSON.stringify({ id, fileName }));
+    const url = `${window.location.origin}/?viewer=${payload}`;
+    window.open(url, '_blank', 'noopener');
   }
 }

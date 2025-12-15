@@ -47,16 +47,51 @@ import { AuthService } from '../../core/services/auth.service';
     </app-layout>
   `,
   styles: [`
-    .actions { display:flex; gap:8px; margin-bottom: 16px; }
-    .btn { background:#4f46e5; color:#fff; padding:8px 12px; border-radius:8px; text-decoration:none; }
-    .btn.secondary { background:#0ea5e9; }
-    .btn.danger { background:#dc2626; }
+    .actions { display:flex; gap:10px; margin-bottom: 20px; }
+    .btn {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      padding: 8px 14px;
+      border-radius: 999px;
+      text-decoration:none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    }
+    .btn.secondary { background: var(--info); }
+    .btn.danger { background: var(--danger); }
     .btn.danger:hover { background:#b91c1c; }
-    .btn.small { padding:6px 10px; font-size: 13px; }
-    .table { width:100%; border-collapse:collapse; background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
-    th, td { padding:10px 12px; border-bottom:1px solid #e5e7eb; }
-    th { background:#f9fafb; text-align:left; font-weight:600; }
-    .badge { padding:4px 8px; border-radius:6px; background:#e5e7eb; font-size:12px; }
+    .btn.small { padding:6px 11px; font-size: 0.8rem; }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+    }
+    .table {
+      width:100%;
+      border-collapse:collapse;
+      background: var(--card-bg);
+      border:1px solid var(--border-color);
+      border-radius: 12px;
+      overflow:hidden;
+    }
+    th, td { padding:10px 12px; border-bottom:1px solid var(--border-color); }
+    th {
+      background:#f9fafb;
+      text-align:left;
+      font-weight:600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .badge {
+      padding:4px 9px;
+      border-radius:999px;
+      background:#e5e7eb;
+      font-size:11px;
+      font-weight:500;
+    }
     .badge.ok { background:#dcfce7; color:#166534; }
     .badge.warn { background:#fef9c3; color:#854d0e; }
     .badge.err { background:#fee2e2; color:#991b1b; }

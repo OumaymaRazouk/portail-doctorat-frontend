@@ -11,6 +11,8 @@ import { CreateInscriptionComponent } from './features/inscriptions/create-inscr
 import { CreateReinscriptionComponent } from './features/inscriptions/create-reinscription.component';
 import { EditInscriptionComponent } from './features/inscriptions/edit-inscription.component';
 import { InscriptionDetailComponent } from './features/inscriptions/inscription-detail.component';
+import { InscriptionAttachmentViewerComponent } from './features/inscriptions/inscription-attachment-viewer.component';
+import { InscriptionPdfViewerComponent } from './features/inscriptions/inscription-pdf-viewer.component';
 import { SoutenanceDoctorantComponent } from './features/soutenances/soutenance-doctorant.component';
 import { SoutenanceDirecteurComponent } from './features/soutenances/soutenance-directeur.component';
 import { SoutenanceAdminComponent } from './features/soutenances/soutenance-admin.component';
@@ -32,6 +34,8 @@ export const routes: Routes = [
   { path: 'inscriptions/nouvelle', component: CreateInscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
   { path: 'inscriptions/:id/edit', component: EditInscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
   { path: 'inscriptions/:id/consultation', component: InscriptionDetailComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT','DIRECTEUR','PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
+  { path: 'inscriptions/:id/attachments/:fileName', component: InscriptionAttachmentViewerComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT','DIRECTEUR','PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
+  { path: 'inscriptions/:id/pdf-viewer/:fileName', component: InscriptionPdfViewerComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT','DIRECTEUR','PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
   { path: 'reinscriptions/nouvelle', component: CreateReinscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
   { path: 'soutenances/mine', component: SoutenanceDoctorantComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
   { path: 'soutenances/directeur', component: SoutenanceDirecteurComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DIRECTEUR','SUPERADMIN'] as Role[] } },

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../components/layout.component';
 import { AuthService } from '../../core/services/auth.service';
-import { SoutenanceService, SoutenanceDTO, JuryMemberInput } from '../../core/services/soutenance.service';
+import { SoutenanceService, SoutenanceDTO, JuryMemberInput, PlanificationInput } from '../../core/services/soutenance.service';
 
 @Component({
   selector: 'app-soutenance-directeur',
@@ -39,6 +39,10 @@ import { SoutenanceService, SoutenanceDTO, JuryMemberInput } from '../../core/se
               <button class="btn small" (click)="selectForJury(s)"
                       *ngIf="s.status === 'PREREQUIS_VALIDES' || s.status === 'JURY_PROPOSE' || s.status === 'JURY_VALIDE'">
                 Gérer le jury
+              </button>
+              <button class="btn small secondary" (click)="selectForPlanification(s)"
+                      *ngIf="s.status === 'SOUTENANCE_AUTORISEE' || s.status === 'PLANIFICATION_PROPOSEE' || s.status === 'SOUTENANCE_PLANIFIEE'">
+                Proposer une date
               </button>
             </td>
           </tr>
@@ -97,6 +101,34 @@ import { SoutenanceService, SoutenanceDTO, JuryMemberInput } from '../../core/se
           <div *ngIf="juryMessage" class="msg">{{ juryMessage }}</div>
         </form>
       </div>
+
+      <div class="card" *ngIf="planifSelected">
+        <h3>Proposition de planification pour la soutenance du doctorant {{ planifSelected.doctorantId }}</h3>
+        <form (ngSubmit)="onSavePlanification()" class="form">
+          <div class="row">
+            <label>Date et heure (ISO, ex: 2025-12-20T10:00:00)</label>
+            <input class="input" [(ngModel)]="planifForm.dateHeure" name="dateHeure" />
+          </div>
+          <div class="row">
+            <label>Salle</label>
+            <input class="input" [(ngModel)]="planifForm.salle" name="salle" />
+          </div>
+          <div class="row">
+            <label>Lieu</label>
+            <input class="input" [(ngModel)]="planifForm.lieu" name="lieu" />
+          </div>
+          <div class="row">
+            <label>Lien visioconférence (optionnel)</label>
+            <input class="input" [(ngModel)]="planifForm.lienVisioconference" name="lienVisioconference" />
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn" [disabled]="savingPlanif">Enregistrer la proposition</button>
+            <button type="button" class="btn secondary" (click)="cancelPlanification()">Annuler</button>
+          </div>
+          <div *ngIf="planifError" class="err">{{ planifError }}</div>
+          <div *ngIf="planifMessage" class="msg">{{ planifMessage }}</div>
+        </form>
+      </div>
     </app-layout>
   `,
   styles: [`
@@ -137,6 +169,12 @@ export class SoutenanceDirecteurComponent {
   juryError = '';
   juryMessage = '';
 
+  planifSelected: SoutenanceDTO | null = null;
+  planifForm: PlanificationInput = { dateHeure: '', salle: '', lieu: '', lienVisioconference: '' };
+  savingPlanif = false;
+  planifError = '';
+  planifMessage = '';
+
   constructor(private auth: AuthService, private soutenanceService: SoutenanceService) {
     this.load();
   }
@@ -160,6 +198,46 @@ export class SoutenanceDirecteurComponent {
       error: () => {
         this.error = 'Impossible de charger le profil directeur';
         this.loading = false;
+      }
+    });
+  }
+
+  selectForPlanification(s: SoutenanceDTO) {
+    this.planifSelected = s;
+    this.planifError = '';
+    this.planifMessage = '';
+    this.planifForm = {
+      dateHeure: s.datePlanifiee || '',
+      salle: s.salle || '',
+      lieu: s.lieu || '',
+      lienVisioconference: ''
+    };
+  }
+
+  cancelPlanification() {
+    this.planifSelected = null;
+  }
+
+  onSavePlanification() {
+    if (!this.planifSelected) return;
+    this.savingPlanif = true;
+    this.planifError = '';
+    this.planifMessage = '';
+    this.soutenanceService.directeurPlanifySoutenance(this.planifSelected.id, this.planifForm).subscribe({
+      next: res => {
+        this.savingPlanif = false;
+        if (res.errors && res.errors.length > 0) {
+          this.planifError = res.errors[0].message;
+          return;
+        }
+        this.planifMessage = 'Proposition de date enregistrée';
+        this.planifSelected = null;
+        this.load();
+      },
+      error: e => {
+        console.error(e);
+        this.savingPlanif = false;
+        this.planifError = 'Erreur lors de la proposition de planification';
       }
     });
   }
@@ -209,7 +287,7 @@ export class SoutenanceDirecteurComponent {
   }
 
   statusClass(status: string) {
-    if (status === 'SOUTENANCE_EFFECTUEE' || status === 'SOUTENANCE_PLANIFIEE' || status === 'JURY_VALIDE' || status === 'SOUTENANCE_AUTORISEE') {
+    if (status === 'SOUTENANCE_EFFECTUEE' || status === 'SOUTENANCE_PLANIFIEE' || status === 'PLANIFICATION_PROPOSEE' || status === 'JURY_VALIDE' || status === 'SOUTENANCE_AUTORISEE') {
       return 'ok';
     }
     if (status === 'REJETE') return 'err';

@@ -60,6 +60,12 @@ export interface InscriptionDTO {
 
 export type InscriptionStatus = 'BROUILLON' | 'EN_ATTENTE_ADMIN' | 'EN_ATTENTE_DIRECTEUR' | 'VALIDE' | 'REJETE';
 
+export interface InscriptionYearSummary {
+  anneeAcademique: string;
+  total: number;
+  inscriptions?: InscriptionDTO[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class InscriptionService {
   private api = inject(ApiService);
@@ -135,6 +141,18 @@ export class InscriptionService {
   }
 
   buildAttachmentUrl(id: string, fileName: string) {
-    return `${this.base}/${id}/attachments/${encodeURIComponent(fileName)}`;
+    return `${environment.apiBaseUrl}${this.base}/${id}/attachments/${encodeURIComponent(fileName)}`;
+  }
+
+  getAttachmentBlob(id: string, fileName: string) {
+    return this.api.getBlob(`${this.base}/${id}/attachments/${encodeURIComponent(fileName)}`);
+  }
+
+  getStatsByYear(annee?: string) {
+    let url = '/stats/inscriptions';
+    if (annee) {
+      url = url + `?annee=${encodeURIComponent(annee)}`;
+    }
+    return this.api.get<InscriptionYearSummary[]>(url);
   }
 }

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +17,33 @@ import { RouterOutlet } from '@angular/router';
   `]
 })
 export class AppComponent {
-  constructor() {
+  constructor(private router: Router) {
     console.log('AppComponent loaded');
+    this.handleViewerRedirect();
+  }
+
+  private handleViewerRedirect() {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const search = window.location.search || '';
+    if (!search.includes('viewer=')) {
+      return;
+    }
+    const params = new URLSearchParams(search);
+    const viewer = params.get('viewer');
+    if (!viewer) {
+      return;
+    }
+    try {
+      const data = JSON.parse(viewer);
+      const id = (data as any).id;
+      const fileName = (data as any).fileName;
+      if (id && fileName) {
+        this.router.navigate(['/inscriptions', id, 'pdf-viewer', fileName]);
+      }
+    } catch {
+      // ignore malformed viewer payload
+    }
   }
 }

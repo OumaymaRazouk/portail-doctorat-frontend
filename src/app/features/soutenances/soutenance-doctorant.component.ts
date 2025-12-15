@@ -72,6 +72,11 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput } from '../../co
               <textarea id="resume" name="resume" [(ngModel)]="form.resumeFinal" rows="4" class="input" required></textarea>
             </div>
 
+            <div class="row">
+              <label for="motsCles">Mots-clés (séparés par des virgules)</label>
+              <input id="motsCles" name="motsCles" [(ngModel)]="motsClesText" class="input" />
+            </div>
+
             <div class="grid">
               <div class="row">
                 <label for="pubs">Nombre de publications (Q1/Q2)</label>
@@ -156,11 +161,14 @@ export class SoutenanceDoctorantComponent {
   errorMessage = '';
   successMessage = '';
 
+  motsClesText = '';
+
   form: SoutenanceDraftInput & { directeurId: string } = {
     doctorantId: '',
     directeurId: '',
     titreTheseDefinitif: '',
     resumeFinal: '',
+    motsCles: [],
     publicationsCount: 0,
     communicationsCount: 0,
     heuresFormationCumulees: 0,
@@ -208,11 +216,13 @@ export class SoutenanceDoctorantComponent {
             directeurId: this.current.directeurId,
             titreTheseDefinitif: this.current.titreTheseDefinitif || '',
             resumeFinal: this.current.resumeFinal || '',
+            motsCles: this.current.motsCles || [],
             publicationsCount: this.current.publicationsCount,
             communicationsCount: this.current.communicationsCount,
             heuresFormationCumulees: this.current.heuresFormationCumulees,
             dureeDoctoratAnnees: this.current.dureeDoctoratAnnees
           };
+          this.motsClesText = (this.form.motsCles || []).join(', ');
         }
         this.loading = false;
       },
@@ -228,11 +238,19 @@ export class SoutenanceDoctorantComponent {
     this.errorMessage = '';
     this.successMessage = '';
     this.saving = true;
+
+    const rawMots = this.motsClesText || '';
+    const motsClesList = rawMots
+      .split(',')
+      .map(m => m.trim())
+      .filter(m => m.length > 0);
+
     const input: SoutenanceDraftInput = {
       doctorantId: this.form.doctorantId,
       directeurId: this.form.directeurId,
       titreTheseDefinitif: this.form.titreTheseDefinitif,
       resumeFinal: this.form.resumeFinal,
+      motsCles: motsClesList,
       publicationsCount: Number(this.form.publicationsCount || 0),
       communicationsCount: Number(this.form.communicationsCount || 0),
       heuresFormationCumulees: Number(this.form.heuresFormationCumulees || 0),

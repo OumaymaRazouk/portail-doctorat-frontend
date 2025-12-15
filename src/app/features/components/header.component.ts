@@ -12,37 +12,44 @@ import { Router } from '@angular/router';
   </header>
   `,
   styles: [`
-    .header { 
-      height: 70px;
-      background-color: #343a40;
-      color: white;
-      padding: 0 2rem;
+    .header {
+      height: 64px;
+      background-color: var(--secondary);
+      color: var(--secondary-foreground);
+      padding: 0 1.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: var(--shadow-soft);
       width: 100%;
+      position: relative;
+      z-index: 10;
     }
-    
+
     .logo {
-      font-weight: bold;
-      font-size: 1.2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.02em;
     }
-    
+
     .logout-btn {
-      background: transparent;
-      color: white;
-      border: 1px solid rgba(255,255,255,0.5);
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 0.875rem;
+      background-color: transparent;
+      color: var(--secondary-foreground);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
     }
-    
+
     .logout-btn:hover {
-      background-color: rgba(255,255,255,0.1);
-      border-color: white;
+      background-color: rgba(248, 250, 252, 0.06);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.35);
+      transform: translateY(-1px);
     }
   `]
 })

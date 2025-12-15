@@ -33,4 +33,10 @@ export class ApiService {
     const opts: { headers?: HttpHeaders; observe: 'body' } = { ...(options || {}), observe: 'body' } as any;
     return this.http.get<T>(fullUrl, opts); 
   }
+
+  getBlob(url: string, options?: { headers?: HttpHeaders }) {
+    const fullUrl = url.startsWith('http') ? url : (environment.apiBaseUrl + url);
+    const opts = { ...(options || {}), responseType: 'blob' as 'blob' };
+    return this.http.get(fullUrl, opts);
+  }
 }

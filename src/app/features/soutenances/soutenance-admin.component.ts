@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../components/layout.component';
-import { SoutenanceService, SoutenanceDTO, SoutenanceStatus, PlanificationInput } from '../../core/services/soutenance.service';
+import { SoutenanceService, SoutenanceDTO, SoutenanceStatus, PlanificationInput, WeeklySoutenanceSummary } from '../../core/services/soutenance.service';
 
 @Component({
   selector: 'app-soutenance-admin',
@@ -50,7 +50,7 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceStatus, PlanificationInput 
               <button class="btn small danger" *ngIf="s.status==='SOUMIS' || s.status==='PREREQUIS_EN_VERIFICATION'" (click)="reject(s)">Rejeter</button>
               <button class="btn small" *ngIf="s.status==='JURY_PROPOSE'" (click)="validateJury(s)">Valider jury</button>
               <button class="btn small" *ngIf="s.status==='JURY_VALIDE'" (click)="authorizeSoutenance(s)">Autoriser soutenance</button>
-              <button class="btn small secondary" *ngIf="s.status==='SOUTENANCE_AUTORISEE' || s.status==='SOUTENANCE_PLANIFIEE'" (click)="openPlanification(s)">Planifier</button>
+              <button class="btn small secondary" *ngIf="s.status==='SOUTENANCE_AUTORISEE' || s.status==='PLANIFICATION_PROPOSEE' || s.status==='SOUTENANCE_PLANIFIEE'" (click)="openPlanification(s)">Planifier</button>
               <button class="btn small" *ngIf="s.status==='SOUTENANCE_PLANIFIEE'" (click)="markDone(s)">Marquer effectuée</button>
             </td>
           </tr>
@@ -85,6 +85,49 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceStatus, PlanificationInput 
             <button type="button" class="btn secondary" (click)="cancelPlanification()">Annuler</button>
           </div>
         </form>
+      </div>
+
+      <div class="card">
+        <h3>Statistiques hebdomadaires des soutenances (gRPC)</h3>
+        <div *ngIf="statsLoading">Chargement...</div>
+        <div *ngIf="!statsLoading && statsError" class="err">{{ statsError }}</div>
+        <div *ngIf="!statsLoading && !statsError && weeklyStats.length === 0">Aucune soutenance planifiée sur la période.</div>
+
+        <ng-container *ngIf="!statsLoading && !statsError && weeklyStats.length > 0">
+          <div *ngFor="let w of weeklyStats" class="week-block">
+            <h4>Semaine {{ w.weekStart }} → {{ w.weekEnd }} ({{ w.total }} soutenance(s))</h4>
+            <table *ngIf="w.soutenances?.length" class="table">
+              <thead>
+                <tr>
+                  <th>Doctorant</th>
+                  <th>Directeur</th>
+                  <th>Titre</th>
+                  <th>Date / Lieu</th>
+                  <th>Jury</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of w.soutenances">
+                  <td>{{ s.doctorantId }}</td>
+                  <td>{{ s.directeurId }}</td>
+                  <td>{{ s.titreTheseDefinitif }}</td>
+                  <td>
+                    <div *ngIf="s.datePlanifiee">{{ s.datePlanifiee | date:'short' }}</div>
+                    <div *ngIf="s.salle || s.lieu">{{ s.salle }} {{ s.lieu }}</div>
+                  </td>
+                  <td>
+                    <div *ngIf="!s.jury || s.jury.length === 0">Aucun jury défini.</div>
+                    <ul *ngIf="s.jury && s.jury.length > 0">
+                      <li *ngFor="let j of s.jury">
+                        <strong>{{ j.role }}</strong> - {{ j.nom }} {{ j.prenom }} ({{ j.affiliation }})
+                      </li>
+                    </ul>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
       </div>
     </app-layout>
   `,
@@ -122,6 +165,7 @@ export class SoutenanceAdminComponent {
     'JURY_PROPOSE',
     'JURY_VALIDE',
     'SOUTENANCE_AUTORISEE',
+    'PLANIFICATION_PROPOSEE',
     'SOUTENANCE_PLANIFIEE',
     'SOUTENANCE_EFFECTUEE',
     'REJETE'
@@ -132,8 +176,13 @@ export class SoutenanceAdminComponent {
   planifForm: PlanificationInput = { dateHeure: '', salle: '', lieu: '', lienVisioconference: '' };
   savingPlanif = false;
 
+  weeklyStats: WeeklySoutenanceSummary[] = [];
+  statsLoading = false;
+  statsError = '';
+
   constructor(private soutenanceService: SoutenanceService) {
     this.load();
+    this.loadWeeklyStats();
   }
 
   load() {
@@ -148,6 +197,20 @@ export class SoutenanceAdminComponent {
         console.error(e);
         this.error = 'Erreur lors du chargement des soutenances';
         this.loading = false;
+      }
+    });
+  }
+
+  private loadWeeklyStats() {
+    this.statsLoading = true; this.statsError = '';
+    this.soutenanceService.getWeeklyStats(undefined, undefined, true).subscribe({
+      next: res => {
+        this.weeklyStats = res;
+        this.statsLoading = false;
+      },
+      error: () => {
+        this.statsError = 'Erreur lors du chargement des statistiques de soutenance.';
+        this.statsLoading = false;
       }
     });
   }
@@ -246,7 +309,7 @@ export class SoutenanceAdminComponent {
   }
 
   statusClass(status: string) {
-    if (status === 'SOUTENANCE_EFFECTUEE' || status === 'SOUTENANCE_PLANIFIEE' || status === 'JURY_VALIDE' || status === 'SOUTENANCE_AUTORISEE') {
+    if (status === 'SOUTENANCE_EFFECTUEE' || status === 'SOUTENANCE_PLANIFIEE' || status === 'PLANIFICATION_PROPOSEE' || status === 'JURY_VALIDE' || status === 'SOUTENANCE_AUTORISEE') {
       return 'ok';
     }
     if (status === 'REJETE') return 'err';

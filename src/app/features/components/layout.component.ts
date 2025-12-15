@@ -27,6 +27,7 @@ import {FooterComponent} from './footer.component';
       flex-direction: column;
       min-height: 100vh;
       width: 100%;
+      background: var(--background);
     }
     
     .layout-body { 
@@ -37,11 +38,11 @@ import {FooterComponent} from './footer.component';
     
     .content { 
       flex: 1; 
-      background: #fff; 
-      border-radius: 8px; 
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
-      margin: 20px;
-      padding: 2rem;
+      background: var(--card-bg);
+      border-radius: 18px; 
+      box-shadow: var(--shadow-soft);
+      margin: 24px;
+      padding: 2rem 2.25rem;
       min-height: calc(100vh - 140px);
       overflow-y: auto;
     }

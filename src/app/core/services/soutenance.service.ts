@@ -10,6 +10,7 @@ export type SoutenanceStatus =
   | 'JURY_PROPOSE'
   | 'JURY_VALIDE'
   | 'SOUTENANCE_AUTORISEE'
+  | 'PLANIFICATION_PROPOSEE'
   | 'SOUTENANCE_PLANIFIEE'
   | 'SOUTENANCE_EFFECTUEE'
   | 'REJETE';
@@ -21,6 +22,7 @@ export interface SoutenanceDTO {
   status: SoutenanceStatus;
   titreTheseDefinitif?: string;
   resumeFinal?: string;
+  motsCles?: string[];
   publicationsCount: number;
   communicationsCount: number;
   heuresFormationCumulees: number;
@@ -37,6 +39,7 @@ export interface SoutenanceDraftInput {
   directeurId: string;
   titreTheseDefinitif: string;
   resumeFinal: string;
+  motsCles: string[];
   publicationsCount: number;
   communicationsCount: number;
   heuresFormationCumulees: number;
@@ -52,6 +55,25 @@ export interface JuryMemberInput {
   role: 'RAPPORTEUR' | 'EXAMINATEUR' | 'PRESIDENT' | 'INVITE';
 }
 
+export interface JuryMemberView {
+  nom: string;
+  prenom: string;
+  affiliation: string;
+  role: string;
+}
+
+export interface SoutenanceStatView {
+  id: string;
+  doctorantId: string;
+  directeurId: string;
+  status: SoutenanceStatus | string;
+  titreTheseDefinitif?: string;
+  datePlanifiee?: string;
+  salle?: string;
+  lieu?: string;
+  jury?: JuryMemberView[];
+}
+
 export interface PlanificationInput {
   dateHeure: string;
   salle: string;
@@ -64,6 +86,13 @@ interface GraphQLResponse<T> {
   errors?: { message: string }[];
 }
 
+export interface WeeklySoutenanceSummary {
+  weekStart: string;
+  weekEnd: string;
+  total: number;
+  soutenances?: SoutenanceStatView[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class SoutenanceService {
   private api = inject(ApiService);
@@ -72,6 +101,18 @@ export class SoutenanceService {
   private execute<T>(query: string, variables?: any) {
     const body = { query, variables };
     return this.api.post<GraphQLResponse<T>>(this.graphqlUrl, body);
+  }
+
+  getWeeklyStats(start?: string, end?: string, includeDetails = false) {
+    let url = '/stats/soutenances/weekly';
+    const params: string[] = [];
+    if (start) params.push(`start=${encodeURIComponent(start)}`);
+    if (end) params.push(`end=${encodeURIComponent(end)}`);
+    if (includeDetails) params.push('includeDetails=true');
+    if (params.length > 0) {
+      url = url + '?' + params.join('&');
+    }
+    return this.api.get<WeeklySoutenanceSummary[]>(url);
   }
 
   listForDoctorant(doctorantId: string) {
@@ -83,6 +124,7 @@ export class SoutenanceService {
         status
         titreTheseDefinitif
         resumeFinal
+        motsCles
         publicationsCount
         communicationsCount
         heuresFormationCumulees
@@ -104,6 +146,7 @@ export class SoutenanceService {
         status
         titreTheseDefinitif
         resumeFinal
+        motsCles
         publicationsCount
         communicationsCount
         heuresFormationCumulees
@@ -127,6 +170,7 @@ export class SoutenanceService {
         status
         titreTheseDefinitif
         resumeFinal
+        motsCles
         publicationsCount
         communicationsCount
         heuresFormationCumulees
@@ -230,6 +274,19 @@ export class SoutenanceService {
       }
     }`;
     return this.execute<{ adminAuthorizeSoutenance: SoutenanceDTO }>(query, { id });
+  }
+
+  directeurPlanifySoutenance(id: string, input: PlanificationInput) {
+    const query = `mutation DirecteurPlanifySoutenance($id: ID!, $input: PlanificationInput!) {
+      directeurProposePlanification(id: $id, input: $input) {
+        id
+        status
+        datePlanifiee
+        salle
+        lieu
+      }
+    }`;
+    return this.execute<{ directeurProposePlanification: SoutenanceDTO }>(query, { id, input });
   }
 
   adminPlanifySoutenance(id: string, input: PlanificationInput) {

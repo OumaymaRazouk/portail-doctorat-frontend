@@ -34,47 +34,50 @@ import { HasRoleDirective } from '../../shared/directives/has-role.directive';
   </aside>
   `,
   styles: [`
-    .sidebar { 
-      width: 250px; 
-      min-width: 250px;
-      background-color: #f8f9fa;
-      border-right: 1px solid #dee2e6;
-      padding: 1.5rem;
-      box-shadow: 2px 0 4px rgba(0,0,0,0.1);
-      min-height: calc(100vh - 100px);
+    .sidebar {
+      width: 240px;
+      min-width: 240px;
+      background-color: #020617;
+      color: var(--secondary-foreground);
+      padding: 1.25rem 1.5rem;
+      border-right: 1px solid rgba(15, 23, 42, 0.6);
+      box-shadow: 2px 0 12px rgba(15, 23, 42, 0.45);
+      min-height: calc(100vh - 64px);
     }
-    
-    .nav-list { 
-      list-style: none; 
-      padding: 0; 
+
+    .nav-list {
+      list-style: none;
+      padding: 0;
       margin: 0;
       display: flex;
       flex-direction: column;
+      gap: 4px;
     }
-    
-    .nav-item { 
-      margin: 4px 0; 
+
+    .nav-item {
+      margin: 2px 0;
     }
-    
-    .nav-link { 
+
+    .nav-link {
       display: block;
-      color: #333; 
+      color: #e5e7eb;
       text-decoration: none;
-      padding: 12px 16px;
-      border-radius: 8px;
-      transition: all 0.2s ease;
+      padding: 10px 14px;
+      border-radius: 999px;
+      transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
       font-weight: 500;
+      font-size: 0.9rem;
     }
-    
-    .nav-link:hover { 
-      color: #0d6efd; 
-      background-color: #e7f3ff;
-      transform: translateX(4px);
+
+    .nav-link:hover {
+      color: #f9fafb;
+      background-color: rgba(37, 99, 235, 0.2);
+      transform: translateX(2px);
     }
-    
+
     .nav-link.active {
-      color: #0d6efd;
-      background-color: #e7f3ff;
+      color: #f9fafb;
+      background-color: rgba(37, 99, 235, 0.9);
       font-weight: 600;
     }
   `]

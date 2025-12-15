@@ -139,16 +139,77 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
   </div>
   `,
   styles: [`
-    .page { min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 24px; background: #f7fafc; }
-    .card { width: 100%; max-width: 640px; background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-    h2 { margin: 0 0 16px; }
-    .form { display: flex; flex-direction: column; gap: 12px; }
-    .row { display: flex; flex-direction: column; gap: 6px; }
-    label { font-size: 13px; color: #4a5568; }
-    .input { padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
-    .btn { margin-top: 8px; background: #4f46e5; color: white; border: 0; border-radius: 8px; padding: 10px 12px; cursor: pointer; }
-    .btn:hover { background: #4338ca; }
-    .footer { margin-top: 16px; text-align: right; }
+    .page {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px;
+      background: var(--background);
+    }
+
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 1.75rem 2rem;
+      box-shadow: var(--shadow-soft);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      color: #4a5568;
+      font-weight: 500;
+    }
+
+    .input {
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 14px;
+      background: #ffffff;
+    }
+
+    .btn {
+      margin-top: 8px;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+    }
+
+    .footer {
+      margin-top: 16px;
+      text-align: right;
+      font-size: 0.9rem;
+    }
   `]
 })
 export class CreateInscriptionComponent {
@@ -206,6 +267,9 @@ export class CreateInscriptionComponent {
 
   onSubmit() {
     if (this.submitting || this.uploading) return;
+    // debug: trace submit flow
+    // eslint-disable-next-line no-console
+    console.log('[CreateInscription] onSubmit called', this.form);
     if (!this.isValidAcademicYear(this.form.anneeAcademique)) {
       alert("Format d'année académique invalide. Utilisez AAAA-AAAA (ex: 2025-2026).");
       return;
@@ -213,6 +277,8 @@ export class CreateInscriptionComponent {
     this.submitting = true;
     this.service.create(this.form).subscribe({
       next: (dto) => {
+        // eslint-disable-next-line no-console
+        console.log('[CreateInscription] create() success', dto);
         const id = dto?.id;
         if (id && (this.diplomeFile || this.cvFile || this.lettreMotivationFile || this.cinFile)) {
           this.uploading = true;
@@ -223,29 +289,40 @@ export class CreateInscriptionComponent {
           if (this.cinFile) files[3] = this.cinFile;
           this.service.uploadAttachments(id, files).subscribe({
             next: () => {
+              // eslint-disable-next-line no-console
+              console.log('[CreateInscription] uploadAttachments() success');
               this.uploading = false;
               this.submitting = false;
               alert('Inscription créée et documents téléversés avec succès');
-              this.router.navigateByUrl('/dashboard/doctorant');
+              // eslint-disable-next-line no-console
+              console.log('[CreateInscription] navigating to /dashboard/doctorant (upload ok)');
+              this.router.navigate(['/dashboard', 'doctorant']);
             },
             error: (e) => {
               this.uploading = false;
               this.submitting = false;
               console.error(e);
               alert("Inscription créée, mais échec du téléversement des documents");
-              this.router.navigateByUrl('/dashboard/doctorant');
+              // eslint-disable-next-line no-console
+              console.log('[CreateInscription] navigating to /dashboard/doctorant (upload error)');
+              this.router.navigate(['/dashboard', 'doctorant']);
             }
           });
         } else {
           this.submitting = false;
           alert('Inscription créée avec succès');
-          this.router.navigateByUrl('/dashboard/doctorant');
+          // eslint-disable-next-line no-console
+          console.log('[CreateInscription] navigating to /dashboard/doctorant (no files)');
+          this.router.navigate(['/dashboard', 'doctorant']);
         }
       },
       error: (err) => {
         this.submitting = false;
         console.error(err);
         alert("Erreur lors de la création de l'inscription");
+        // eslint-disable-next-line no-console
+        console.log('[CreateInscription] navigating to /dashboard/doctorant (create error)');
+        this.router.navigate(['/dashboard', 'doctorant']);
       },
     });
   }
