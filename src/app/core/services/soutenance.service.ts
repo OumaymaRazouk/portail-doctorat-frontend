@@ -27,6 +27,13 @@ export interface SoutenanceDTO {
   communicationsCount: number;
   heuresFormationCumulees: number;
   dureeDoctoratAnnees: number;
+  manuscritPath?: string;
+  rapportThesePath?: string;
+  rapportAntiPlagiatPath?: string;
+  preuvesPublicationsPath?: string;
+  preuvesCommunicationsPath?: string;
+  attestationsFormationsPath?: string;
+  demandeManuscritePath?: string;
   dateSoumission?: string;
   dateAutorisation?: string;
   datePlanifiee?: string;
@@ -44,6 +51,13 @@ export interface SoutenanceDraftInput {
   communicationsCount: number;
   heuresFormationCumulees: number;
   dureeDoctoratAnnees: number;
+  manuscritPath?: string;
+  rapportThesePath?: string;
+  rapportAntiPlagiatPath?: string;
+  preuvesPublicationsPath?: string;
+  preuvesCommunicationsPath?: string;
+  attestationsFormationsPath?: string;
+  demandeManuscritePath?: string;
 }
 
 export interface JuryMemberInput {
@@ -129,6 +143,11 @@ export class SoutenanceService {
         communicationsCount
         heuresFormationCumulees
         dureeDoctoratAnnees
+        manuscritPath
+        rapportThesePath
+        rapportAntiPlagiatPath
+        attestationsFormationsPath
+        demandeManuscritePath
         dateSoumission
         dateAutorisation
         datePlanifiee
@@ -151,6 +170,11 @@ export class SoutenanceService {
         communicationsCount
         heuresFormationCumulees
         dureeDoctoratAnnees
+        manuscritPath
+        rapportThesePath
+        rapportAntiPlagiatPath
+        attestationsFormationsPath
+        demandeManuscritePath
         dateSoumission
         dateAutorisation
         datePlanifiee
@@ -175,6 +199,11 @@ export class SoutenanceService {
         communicationsCount
         heuresFormationCumulees
         dureeDoctoratAnnees
+        manuscritPath
+        rapportThesePath
+        rapportAntiPlagiatPath
+        attestationsFormationsPath
+        demandeManuscritePath
         dateSoumission
         dateAutorisation
         datePlanifiee
@@ -213,6 +242,13 @@ export class SoutenanceService {
       }
     }`;
     return this.execute<{ submitSoutenance: SoutenanceDTO }>(query, { id });
+  }
+
+  deleteDraft(id: string) {
+    const query = `mutation DeleteSoutenanceDraft($id: ID!) {
+      deleteSoutenanceDraft(id: $id)
+    }`;
+    return this.execute<{ deleteSoutenanceDraft: boolean }>(query, { id });
   }
 
   adminMarkPrerequisUnderReview(id: string) {
@@ -302,6 +338,20 @@ export class SoutenanceService {
     return this.execute<{ adminPlanifySoutenance: SoutenanceDTO }>(query, { id, input });
   }
 
+  loadJury(soutenanceId: string) {
+    const query = `query JuryForSoutenance($soutenanceId: String!) {
+      juryForSoutenance(soutenanceId: $soutenanceId) {
+        nom
+        prenom
+        affiliation
+        email
+        telephone
+        role
+      }
+    }`;
+    return this.execute<{ juryForSoutenance: JuryMemberInput[] }>(query, { soutenanceId });
+  }
+
   adminMarkSoutenanceDone(id: string, dateEffective?: string) {
     const query = `mutation AdminMarkSoutenanceDone($id: ID!, $dateEffective: String) {
       adminMarkSoutenanceDone(id: $id, dateEffective: $dateEffective) {
@@ -310,5 +360,30 @@ export class SoutenanceService {
       }
     }`;
     return this.execute<{ adminMarkSoutenanceDone: SoutenanceDTO }>(query, { id, dateEffective });
+  }
+
+  uploadAttachments(id: string, formData: FormData) {
+    const url = `/soutenance/soutenances/${encodeURIComponent(id)}/attachments`;
+    return this.api.post<SoutenanceDTO>(url, formData);
+  }
+
+  listAttachments(id: string) {
+    const url = `/soutenance/soutenances/${encodeURIComponent(id)}/attachments`;
+    return this.api.get<string[]>(url);
+  }
+
+  downloadAutorisation(id: string) {
+    const url = `/soutenance/soutenances/${encodeURIComponent(id)}/autorisation.pdf`;
+    return this.api.getBlob(url);
+  }
+
+  downloadProcesVerbal(id: string) {
+    const url = `/soutenance/soutenances/${encodeURIComponent(id)}/proces-verbal.pdf`;
+    return this.api.getBlob(url);
+  }
+
+  downloadAttachment(id: string, fileName: string) {
+    const url = `/soutenance/soutenances/${encodeURIComponent(id)}/attachments/${encodeURIComponent(fileName)}`;
+    return this.api.getBlob(url);
   }
 }

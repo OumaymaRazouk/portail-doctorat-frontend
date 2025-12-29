@@ -275,18 +275,23 @@ export class CreateInscriptionComponent {
       return;
     }
     this.submitting = true;
+    // eslint-disable-next-line no-console
+    console.log('[CreateInscription] sending create request with form', this.form);
     this.service.create(this.form).subscribe({
       next: (dto) => {
         // eslint-disable-next-line no-console
         console.log('[CreateInscription] create() success', dto);
         const id = dto?.id;
-        if (id && (this.diplomeFile || this.cvFile || this.lettreMotivationFile || this.cinFile)) {
+        if (id) {
+          // Toujours appeler l'upload, FormData ne contiendra que les fichiers réellement sélectionnés
           this.uploading = true;
           const files: File[] = [];
           if (this.diplomeFile) files[0] = this.diplomeFile;
           if (this.cvFile) files[1] = this.cvFile;
           if (this.lettreMotivationFile) files[2] = this.lettreMotivationFile;
           if (this.cinFile) files[3] = this.cinFile;
+          // eslint-disable-next-line no-console
+          console.log('[CreateInscription] calling uploadAttachments with', { id, files });
           this.service.uploadAttachments(id, files).subscribe({
             next: () => {
               // eslint-disable-next-line no-console
@@ -309,11 +314,9 @@ export class CreateInscriptionComponent {
             }
           });
         } else {
+          // Cas de sécurité: pas d'id retourné
           this.submitting = false;
-          alert('Inscription créée avec succès');
-          // eslint-disable-next-line no-console
-          console.log('[CreateInscription] navigating to /dashboard/doctorant (no files)');
-          this.router.navigate(['/dashboard', 'doctorant']);
+          alert("Erreur: l'identifiant de l'inscription n'a pas été retourné par le serveur");
         }
       },
       error: (err) => {

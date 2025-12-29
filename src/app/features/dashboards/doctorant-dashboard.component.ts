@@ -4,16 +4,96 @@ import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { InscriptionService, InscriptionDTO, InscriptionStatus } from '../../core/services/inscription.service';
 import { AuthService } from '../../core/services/auth.service';
+import { SoutenanceService, SoutenanceStatus } from '../../core/services/soutenance.service';
 
 @Component({
   selector: 'app-doctorant-dashboard',
   standalone: true,
   imports: [LayoutComponent, RouterLink, CommonModule],
   template: `
-    <app-layout title="Espace Doctorant">
+    <app-layout [title]="isDoctorant ? 'Espace Doctorant' : 'Espace Candidat'">
       <div class="actions">
-        <a routerLink="/inscriptions/nouvelle" class="btn">Nouvelle inscription</a>
-        <a routerLink="/reinscriptions/nouvelle" class="btn secondary">Nouvelle réinscription</a>
+        <!-- Seuls les candidats peuvent créer une nouvelle inscription/candidature -->
+        <a *ngIf="!isDoctorant" routerLink="/inscriptions/nouvelle" class="btn">Nouvelle candidature</a>
+        <!-- Les doctorants ne voient que la réinscription -->
+        <a *ngIf="isDoctorant" routerLink="/reinscriptions/nouvelle" class="btn secondary">Nouvelle réinscription</a>
+      </div>
+
+      <div class="timeline-card">
+        <h3 class="section-title">Suivi de mon parcours</h3>
+        <div class="steps">
+          <div class="step" [ngClass]="{ done: hasInitialInscriptionValide, current: hasInitialInscription && !hasInitialInscriptionValide }">
+            <div class="step-index">1</div>
+            <div class="step-body">
+              <div class="step-title">Candidature / Inscription initiale</div>
+              <div class="step-status">
+                <ng-container *ngIf="!hasInitialInscription">Aucune candidature déposée</ng-container>
+                <ng-container *ngIf="hasInitialInscription && !hasInitialInscriptionValide">En cours de validation</ng-container>
+                <ng-container *ngIf="hasInitialInscriptionValide">Inscription validée</ng-container>
+              </div>
+            </div>
+          </div>
+
+          <div class="step" [ngClass]="{ disabled: !hasInitialInscriptionValide, done: hasReinscriptions, current: hasInitialInscriptionValide && !hasReinscriptions && !hasSoutenance }">
+            <div class="step-index">2</div>
+            <div class="step-body">
+              <div class="step-title">Réinscriptions annuelles</div>
+              <div class="step-status">
+                <ng-container *ngIf="!hasInitialInscriptionValide">Disponible après validation de l'inscription</ng-container>
+                <ng-container *ngIf="hasInitialInscriptionValide && !hasReinscriptions">Aucune réinscription encore</ng-container>
+                <ng-container *ngIf="hasReinscriptions">{{ reinscriptionsCount }} réinscription(s)</ng-container>
+              </div>
+            </div>
+          </div>
+
+          <div class="step" [ngClass]="{ disabled: !hasInitialInscriptionValide, done: hasSoutenance, current: hasSoutenance }">
+            <div class="step-index">3</div>
+            <div class="step-body">
+              <div class="step-title">Soutenance</div>
+              <div class="step-status">
+                <ng-container *ngIf="!hasInitialInscriptionValide">Disponible en fin de parcours</ng-container>
+                <ng-container *ngIf="hasInitialInscriptionValide && !hasSoutenance">Aucune demande de soutenance</ng-container>
+                <ng-container *ngIf="hasSoutenance">Statut : {{ soutenanceStatus }}</ng-container>
+              </div>
+              <a *ngIf="isDoctorant" routerLink="/soutenances/mine" class="step-link">Voir le détail de ma soutenance</a>
+            </div>
+          </div>
+        </div>
+        <div class="status-lines">
+          <div class="status-row">
+            <div class="status-label">Inscription initiale</div>
+            <div class="status-track">
+              <div *ngFor="let s of inscriptionFlow"
+                   class="status-step"
+                   [ngClass]="[getInitialStatusClass(s), s === 'VALIDE' ? 'final-ok' : '', s === 'REJETE' ? 'final-ko' : '']">
+                <div class="status-step-circle">{{ getStepIndex(inscriptionFlow, s) }}</div>
+                <div class="status-step-label">{{ s }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="status-row">
+            <div class="status-label">Réinscriptions</div>
+            <div class="status-track">
+              <div *ngFor="let s of inscriptionFlow"
+                   class="status-step"
+                   [ngClass]="[getReinsStatusClass(s), s === 'VALIDE' ? 'final-ok' : '', s === 'REJETE' ? 'final-ko' : '']">
+                <div class="status-step-circle">{{ getStepIndex(inscriptionFlow, s) }}</div>
+                <div class="status-step-label">{{ s }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="status-row">
+            <div class="status-label">Soutenance</div>
+            <div class="status-track">
+              <div *ngFor="let s of soutenanceFlow"
+                   class="status-step"
+                   [ngClass]="getSoutenanceStatusClass(s)">
+                <div class="status-step-circle">{{ getStepIndex(soutenanceFlow, s) }}</div>
+                <div class="status-step-label">{{ s }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <h3>Mes demandes</h3>
@@ -68,6 +148,199 @@ import { AuthService } from '../../core/services/auth.service';
       transform: translateY(-1px);
       box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
     }
+    .timeline-card {
+      margin-bottom: 20px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.03), rgba(14, 165, 233, 0.04));
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow: var(--shadow-soft);
+    }
+    .section-title {
+      margin: 0 0 12px 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #111827;
+    }
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-top: 1px dashed var(--border-color);
+    }
+    .step:first-child {
+      border-top: 0;
+    }
+    .step-index {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: rgba(79, 70, 229, 0.1);
+      color: #4f46e5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.4);
+    }
+    .step-body {
+      flex: 1;
+    }
+    .step-title {
+      position: relative;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+      padding-left: 20px;
+    }
+    .step-title::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: #e5e7eb;
+    }
+    .steps .step:nth-child(1) .step-title::before { background: #bfdbfe; }
+    .steps .step:nth-child(2) .step-title::before { background: #a5b4fc; }
+    .steps .step:nth-child(3) .step-title::before { background: #facc15; }
+    .step-status {
+      font-size: 0.85rem;
+      color: #4b5563;
+    }
+    .step.done .step-index {
+      background: #dcfce7;
+      color: #166534;
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.5);
+    }
+    .step.current .step-index {
+      background: #dbeafe;
+      color: #1d4ed8;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.6);
+    }
+    .step.disabled .step-index {
+      background: #e5e7eb;
+      color: #6b7280;
+      box-shadow: none;
+    }
+    .step.disabled .step-status {
+      color: #9ca3af;
+    }
+    .step-link {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 0.8rem;
+      color: #2563eb;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .status-lines {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-label {
+      width: 150px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #374151;
+    }
+    .status-track {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 28px;
+      padding: 10px 4px 4px 4px;
+      overflow-x: auto;
+    }
+    .status-track::before {
+      content: '';
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 22px;
+      height: 2px;
+      background: #e5e7eb;
+      z-index: 0;
+    }
+    .status-step {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      z-index: 1;
+      min-width: 48px;
+    }
+    .status-step-circle {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      border: 2px solid #d1d5db;
+      background: #f9fafb;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-step-label {
+      font-size: 0.7rem;
+      color: #4b5563;
+      text-align: center;
+      max-width: 80px;
+      word-break: break-word;
+    }
+    .status-step.past .status-step-circle {
+      background: #22c55e;
+      border-color: #16a34a;
+      color: #ffffff;
+    }
+    .status-step.current .status-step-circle {
+      background: #2563eb;
+      border-color: #1d4ed8;
+      color: #ffffff;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+    }
+    .status-step.current.final-ok .status-step-circle {
+      background: #22c55e;
+      border-color: #16a34a;
+      color: #ffffff;
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35);
+    }
+    .status-step.current.final-ko .status-step-circle {
+      background: #ef4444;
+      border-color: #b91c1c;
+      color: #ffffff;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35);
+    }
+    .status-step.future .status-step-circle {
+      background: #e5e7eb;
+      border-color: #d1d5db;
+      color: #6b7280;
+    }
+    .status-step.none .status-step-circle {
+      background: #f3f4f6;
+      border-color: #e5e7eb;
+      color: #9ca3af;
+    }
     .table {
       width:100%;
       border-collapse:collapse;
@@ -100,8 +373,36 @@ import { AuthService } from '../../core/services/auth.service';
 export class DoctorantDashboardComponent {
   inscriptions: (InscriptionDTO & { type?: 'INSCRIPTION'|'REINSCRIPTION' })[] = [];
   loading = false;
+  isDoctorant = false;
+  hasInitialInscription = false;
+  hasInitialInscriptionValide = false;
+  hasReinscriptions = false;
+  reinscriptionsCount = 0;
+  hasSoutenance = false;
+  soutenanceStatus: string | null = null;
 
-  constructor(private service: InscriptionService, private auth: AuthService, private router: Router) {
+  // Flux d'inscription: brouillon -> directeur -> admin -> valide ou rejet
+  inscriptionFlow: InscriptionStatus[] = ['BROUILLON', 'EN_ATTENTE_DIRECTEUR', 'EN_ATTENTE_ADMIN', 'VALIDE', 'REJETE'];
+  soutenanceFlow: SoutenanceStatus[] = [
+    'BROUILLON',
+    'SOUMIS',
+    'PREREQUIS_EN_VERIFICATION',
+    'PREREQUIS_VALIDES',
+    'JURY_PROPOSE',
+    'JURY_VALIDE',
+    'SOUTENANCE_AUTORISEE',
+    'PLANIFICATION_PROPOSEE',
+    'SOUTENANCE_PLANIFIEE',
+    'SOUTENANCE_EFFECTUEE',
+    'REJETE'
+  ];
+  currentInitialStatus: InscriptionStatus | null = null;
+  currentReinscriptionStatus: InscriptionStatus | null = null;
+  currentSoutenanceStatus: SoutenanceStatus | null = null;
+
+  constructor(private service: InscriptionService, private auth: AuthService, private router: Router, private soutenance: SoutenanceService) {
+    // Détermine si l'utilisateur connecté est déjà doctorant
+    this.isDoctorant = this.auth.hasRole('DOCTORANT');
     this.load();
   }
 
@@ -110,12 +411,86 @@ export class DoctorantDashboardComponent {
     this.auth.me().subscribe({
       next: me => {
         this.service.listByDoctorant(me.id).subscribe({
-          next: list => { this.inscriptions = list; this.loading = false; },
+          next: list => {
+            this.inscriptions = list;
+
+            const initial = list.find(i => !i.type || i.type === 'INSCRIPTION');
+            this.hasInitialInscription = !!initial;
+            this.hasInitialInscriptionValide = !!initial && initial.status === 'VALIDE';
+            this.currentInitialStatus = (initial?.status as InscriptionStatus) || null;
+
+            const reins = list.filter(i => i.type === 'REINSCRIPTION');
+            this.reinscriptionsCount = reins.length;
+            this.hasReinscriptions = this.reinscriptionsCount > 0;
+
+            if (reins.length > 0) {
+              const last = reins[reins.length - 1];
+              this.currentReinscriptionStatus = (last.status as InscriptionStatus) || null;
+            } else {
+              this.currentReinscriptionStatus = null;
+            }
+
+            this.loading = false;
+          },
           error: () => { this.loading = false; }
         })
+
+        // Récupération d'un résumé de la soutenance pour le suivi global
+        if (this.isDoctorant) {
+          this.soutenance.listForDoctorant(me.id).subscribe({
+            next: res => {
+              const list = res.data?.soutenancesForDoctorant || [];
+              if (list.length > 0) {
+                const current = list.find(s => s.status === 'BROUILLON') || list[0];
+                this.soutenanceStatus = current.status;
+                this.hasSoutenance = true;
+                this.currentSoutenanceStatus = current.status as SoutenanceStatus;
+              } else {
+                this.soutenanceStatus = null;
+                this.hasSoutenance = false;
+                this.currentSoutenanceStatus = null;
+              }
+            },
+            error: () => {
+              this.soutenanceStatus = null;
+              this.hasSoutenance = false;
+              this.currentSoutenanceStatus = null;
+            }
+          });
+        } else {
+          this.soutenanceStatus = null;
+          this.hasSoutenance = false;
+        }
       },
       error: () => { this.loading = false; }
     })
+  }
+
+  private getStatusPosition(flow: string[], current: string | null, value: string): 'past' | 'current' | 'future' | 'none' {
+    if (!current) return 'none';
+    const currentIndex = flow.indexOf(current);
+    const index = flow.indexOf(value);
+    if (currentIndex === -1 || index === -1) return 'none';
+    if (index < currentIndex) return 'past';
+    if (index === currentIndex) return 'current';
+    return 'future';
+  }
+
+  getStepIndex(flow: string[], value: string): number {
+    const idx = flow.indexOf(value);
+    return idx === -1 ? 0 : idx + 1;
+  }
+
+  getInitialStatusClass(s: InscriptionStatus) {
+    return this.getStatusPosition(this.inscriptionFlow, this.currentInitialStatus, s);
+  }
+
+  getReinsStatusClass(s: InscriptionStatus) {
+    return this.getStatusPosition(this.inscriptionFlow, this.currentReinscriptionStatus, s);
+  }
+
+  getSoutenanceStatusClass(s: SoutenanceStatus) {
+    return this.getStatusPosition(this.soutenanceFlow, this.currentSoutenanceStatus, s);
   }
 
   submit(i: InscriptionDTO) {

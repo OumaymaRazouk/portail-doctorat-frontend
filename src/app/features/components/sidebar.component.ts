@@ -9,7 +9,7 @@ import { HasRoleDirective } from '../../shared/directives/has-role.directive';
   template: `
   <aside class="sidebar">
     <ul class="nav-list">
-      <li class="nav-item" *hasRole="'DOCTORANT'">
+      <li class="nav-item" *hasRole="['CANDIDAT','DOCTORANT']">
         <a routerLink="/dashboard/doctorant" class="nav-link">Espace Doctorant</a>
       </li>
       <li class="nav-item" *hasRole="'DOCTORANT'">

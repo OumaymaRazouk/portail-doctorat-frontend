@@ -52,6 +52,13 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceStatus, PlanificationInput,
               <button class="btn small" *ngIf="s.status==='JURY_VALIDE'" (click)="authorizeSoutenance(s)">Autoriser soutenance</button>
               <button class="btn small secondary" *ngIf="s.status==='SOUTENANCE_AUTORISEE' || s.status==='PLANIFICATION_PROPOSEE' || s.status==='SOUTENANCE_PLANIFIEE'" (click)="openPlanification(s)">Planifier</button>
               <button class="btn small" *ngIf="s.status==='SOUTENANCE_PLANIFIEE'" (click)="markDone(s)">Marquer effectuée</button>
+              <button class="btn small secondary" *ngIf="s.status==='SOUTENANCE_AUTORISEE' || s.status==='PLANIFICATION_PROPOSEE' || s.status==='SOUTENANCE_PLANIFIEE' || s.status==='SOUTENANCE_EFFECTUEE'" (click)="downloadAutorisation(s)">Télécharger autorisation</button>
+              <button class="btn small secondary" *ngIf="s.status==='SOUTENANCE_PLANIFIEE' || s.status==='SOUTENANCE_EFFECTUEE'" (click)="downloadProcesVerbal(s)">Procès-verbal</button>
+              <button class="btn small secondary" *ngIf="s.manuscritPath" (click)="downloadPiece(s, 'manuscrit')">Manuscrit</button>
+              <button class="btn small secondary" *ngIf="s.rapportAntiPlagiatPath" (click)="downloadPiece(s, 'rapport')">Anti-plagiat</button>
+              <button class="btn small secondary" *ngIf="s.attestationsFormationsPath" (click)="downloadPiece(s, 'attestations')">Attestations</button>
+              <button class="btn small secondary" *ngIf="s.demandeManuscritePath" (click)="downloadPiece(s, 'demande')">Demande</button>
+              <button class="btn small secondary" (click)="showDetails(s)">Détails</button>
             </td>
           </tr>
           </tbody>
@@ -85,6 +92,76 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceStatus, PlanificationInput,
             <button type="button" class="btn secondary" (click)="cancelPlanification()">Annuler</button>
           </div>
         </form>
+      </div>
+
+      <div class="card" *ngIf="detailSelected">
+        <div class="header">
+          <h3>Détail de la soutenance sélectionnée</h3>
+        </div>
+
+        <div class="section">
+          <h4>Informations générales</h4>
+          <div class="grid">
+            <div><span class="label">Identifiant</span><span class="value">{{ detailSelected.id }}</span></div>
+            <div><span class="label">Doctorant (ID)</span><span class="value">{{ detailSelected.doctorantId }}</span></div>
+            <div><span class="label">Directeur (ID)</span><span class="value">{{ detailSelected.directeurId }}</span></div>
+            <div><span class="label">Statut</span><span class="value">{{ detailSelected.status }}</span></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Informations scientifiques</h4>
+          <div class="grid">
+            <div class="col-2"><span class="label">Titre définitif de la thèse</span><span class="value">{{ detailSelected.titreTheseDefinitif }}</span></div>
+            <div class="col-2"><span class="label">Résumé final</span><span class="value">{{ detailSelected.resumeFinal }}</span></div>
+            <div><span class="label">Mots-clés</span><span class="value">{{ detailSelected.motsCles?.join(', ') }}</span></div>
+            <div><span class="label">Publications (Q1/Q2)</span><span class="value">{{ detailSelected.publicationsCount }}</span></div>
+            <div><span class="label">Communications</span><span class="value">{{ detailSelected.communicationsCount }}</span></div>
+            <div><span class="label">Heures de formation cumulées</span><span class="value">{{ detailSelected.heuresFormationCumulees }}</span></div>
+            <div><span class="label">Durée du doctorat (années)</span><span class="value">{{ detailSelected.dureeDoctoratAnnees }}</span></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Prérequis pour la soutenance</h4>
+          <ul class="checklist">
+            <li class="check-item" [ngClass]="hasMinPublications(detailSelected) ? 'ok' : 'nok'">
+              Publications (Q1/Q2) : {{ detailSelected.publicationsCount }} / 2
+            </li>
+            <li class="check-item" [ngClass]="hasMinCommunications(detailSelected) ? 'ok' : 'nok'">
+              Communications : {{ detailSelected.communicationsCount }} / 2
+            </li>
+            <li class="check-item" [ngClass]="hasMinHeuresFormation(detailSelected) ? 'ok' : 'nok'">
+              Heures de formation cumulées : {{ detailSelected.heuresFormationCumulees }} / 200
+            </li>
+            <li class="check-item" [ngClass]="hasValidDuree(detailSelected) ? 'ok' : 'nok'">
+              Durée du doctorat (années) : {{ detailSelected.dureeDoctoratAnnees }} (max 6)
+            </li>
+            <li class="check-item" [ngClass]="hasManuscrit(detailSelected) ? 'ok' : 'nok'">
+              Manuscrit final (PDF)
+            </li>
+            <li class="check-item" [ngClass]="hasAntiPlagiat(detailSelected) ? 'ok' : 'nok'">
+              Rapport anti-plagiat (PDF)
+            </li>
+            <li class="check-item" [ngClass]="hasAttestations(detailSelected) ? 'ok' : 'nok'">
+              Attestations de formations (PDF)
+            </li>
+            <li class="check-item" [ngClass]="hasDemande(detailSelected) ? 'ok' : 'nok'">
+              Demande manuscrite (PDF)
+            </li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h4>Pièces jointes</h4>
+          <div *ngIf="!detailHasAnyAttachment()">Aucune pièce jointe.</div>
+          <ul *ngIf="detailHasAnyAttachment()" class="attachments">
+            <li *ngIf="detailSelected.manuscritPath"><a href="#" class="link" (click)="openAttachment(detailSelected, detailSelected.manuscritPath, $event)">{{ detailSelected.manuscritPath }}</a></li>
+            <li *ngIf="detailSelected.rapportAntiPlagiatPath"><a href="#" class="link" (click)="openAttachment(detailSelected, detailSelected.rapportAntiPlagiatPath, $event)">{{ detailSelected.rapportAntiPlagiatPath }}</a></li>
+            <li *ngIf="detailSelected.attestationsFormationsPath"><a href="#" class="link" (click)="openAttachment(detailSelected, detailSelected.attestationsFormationsPath, $event)">{{ detailSelected.attestationsFormationsPath }}</a></li>
+            <li *ngIf="detailSelected.demandeManuscritePath"><a href="#" class="link" (click)="openAttachment(detailSelected, detailSelected.demandeManuscritePath, $event)">{{ detailSelected.demandeManuscritePath }}</a></li>
+          </ul>
+        </div>
       </div>
 
       <div class="card">
@@ -149,6 +226,19 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceStatus, PlanificationInput,
     .row { display:flex; flex-direction:column; gap:4px; }
     .input { padding:6px 8px; border-radius:8px; border:1px solid #e2e8f0; font-size:13px; }
     .actions { display:flex; gap:8px; margin-top:8px; }
+    .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .section { margin-top:12px; }
+    .section h4 { margin:0 0 8px; font-size:15px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px 16px; }
+    .col-2 { grid-column:span 2; }
+    .label { display:block; font-size:12px; color:#6b7280; margin-bottom:2px; }
+    .value { font-size:14px; color:#111827; word-break:break-word; }
+    .attachments { list-style:none; padding-left:0; margin:4px 0 0 0; display:flex; flex-direction:column; gap:4px; }
+    .attachments .link { background:none; border:0; padding:0; color:#2563eb; text-decoration:underline; font-size:14px; cursor:pointer; text-align:left; }
+    .checklist { list-style:none; padding-left:0; margin:4px 0 0 0; }
+    .check-item { font-size:13px; color:#4b5563; }
+    .check-item.ok { color:#16a34a; }
+    .check-item.nok { color:#b91c1c; }
   `]
 })
 export class SoutenanceAdminComponent {
@@ -180,6 +270,8 @@ export class SoutenanceAdminComponent {
   statsLoading = false;
   statsError = '';
 
+  detailSelected: SoutenanceDTO | null = null;
+
   constructor(private soutenanceService: SoutenanceService) {
     this.load();
     this.loadWeeklyStats();
@@ -201,6 +293,10 @@ export class SoutenanceAdminComponent {
     });
   }
 
+  showDetails(s: SoutenanceDTO) {
+    this.detailSelected = s;
+  }
+
   private loadWeeklyStats() {
     this.statsLoading = true; this.statsError = '';
     this.soutenanceService.getWeeklyStats(undefined, undefined, true).subscribe({
@@ -220,6 +316,55 @@ export class SoutenanceAdminComponent {
       next: res => this.afterMutation(res.errors),
       error: e => this.handleError(e)
     });
+  }
+
+  detailHasAnyAttachment(): boolean {
+    const s = this.detailSelected;
+    if (!s) return false;
+    return !!(s.manuscritPath || s.rapportAntiPlagiatPath || s.attestationsFormationsPath || s.demandeManuscritePath);
+  }
+
+  hasMinPublications(s: SoutenanceDTO): boolean {
+    return (s.publicationsCount || 0) >= 2;
+  }
+
+  hasMinCommunications(s: SoutenanceDTO): boolean {
+    return (s.communicationsCount || 0) >= 2;
+  }
+
+  hasMinHeuresFormation(s: SoutenanceDTO): boolean {
+    return (s.heuresFormationCumulees || 0) >= 200;
+  }
+
+  hasValidDuree(s: SoutenanceDTO): boolean {
+    const d = s.dureeDoctoratAnnees || 0;
+    return d > 0 && d <= 6;
+  }
+
+  hasManuscrit(s: SoutenanceDTO): boolean {
+    return !!s.manuscritPath;
+  }
+
+  hasAntiPlagiat(s: SoutenanceDTO): boolean {
+    return !!s.rapportAntiPlagiatPath;
+  }
+
+  hasAttestations(s: SoutenanceDTO): boolean {
+    return !!s.attestationsFormationsPath;
+  }
+
+  hasDemande(s: SoutenanceDTO): boolean {
+    return !!s.demandeManuscritePath;
+  }
+
+  openAttachment(s: SoutenanceDTO, fileName: string, event: MouseEvent) {
+    event.preventDefault();
+    if (!s.id || !fileName) {
+      return;
+    }
+    const payload = encodeURIComponent(JSON.stringify({ id: s.id, fileName, type: 'soutenance' }));
+    const url = `${window.location.origin}/?viewer=${payload}`;
+    window.open(url, '_blank', 'noopener');
   }
 
   validatePrerequis(s: SoutenanceDTO) {
@@ -288,6 +433,58 @@ export class SoutenanceAdminComponent {
     const date = prompt('Date effective (ISO, ex: 2025-12-20T12:30:00). Laisser vide pour utiliser la date planifiée :') || undefined;
     this.soutenanceService.adminMarkSoutenanceDone(s.id, date).subscribe({
       next: res => this.afterMutation(res.errors),
+      error: e => this.handleError(e)
+    });
+  }
+
+  downloadAutorisation(s: SoutenanceDTO) {
+    this.soutenanceService.downloadAutorisation(s.id).subscribe({
+      next: (blob: any) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `autorisation-${s.id}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: e => this.handleError(e)
+    });
+  }
+
+  downloadProcesVerbal(s: SoutenanceDTO) {
+    this.soutenanceService.downloadProcesVerbal(s.id).subscribe({
+      next: (blob: any) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `proces-verbal-${s.id}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: e => this.handleError(e)
+    });
+  }
+
+  downloadPiece(s: SoutenanceDTO, type: 'manuscrit' | 'rapport' | 'attestations' | 'demande') {
+    let fileName: string | undefined;
+    if (type === 'manuscrit') {
+      fileName = s.manuscritPath;
+    } else if (type === 'rapport') {
+      fileName = s.rapportAntiPlagiatPath;
+    } else if (type === 'attestations') {
+      fileName = s.attestationsFormationsPath;
+    } else if (type === 'demande') {
+      fileName = s.demandeManuscritePath;
+    }
+    if (!fileName) {
+      return;
+    }
+    this.soutenanceService.downloadAttachment(s.id, fileName).subscribe({
+      next: (blob: any) => {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank', 'noopener');
+        setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+      },
       error: e => this.handleError(e)
     });
   }

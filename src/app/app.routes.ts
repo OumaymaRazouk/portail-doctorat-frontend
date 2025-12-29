@@ -16,6 +16,7 @@ import { InscriptionPdfViewerComponent } from './features/inscriptions/inscripti
 import { SoutenanceDoctorantComponent } from './features/soutenances/soutenance-doctorant.component';
 import { SoutenanceDirecteurComponent } from './features/soutenances/soutenance-directeur.component';
 import { SoutenanceAdminComponent } from './features/soutenances/soutenance-admin.component';
+import { SoutenancePdfViewerComponent } from './features/soutenances/soutenance-pdf-viewer.component';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { Role } from './core/models/auth.models';
@@ -26,20 +27,21 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'forbidden', component: ForbiddenComponent },
 
-  { path: 'dashboard/doctorant', component: DoctorantDashboardComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
+  { path: 'dashboard/doctorant', component: DoctorantDashboardComponent, canActivate: [authGuard, roleGuard], data: { roles: ['CANDIDAT','DOCTORANT'] as Role[] } },
   { path: 'dashboard/admin', component: AdminDashboardComponent, canActivate: [authGuard, roleGuard], data: { roles: ['PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
   { path: 'dashboard/encadrant', component: EncadrantDashboardComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DIRECTEUR','SUPERADMIN'] as Role[] } },
   { path: 'dashboard/super-admin', component: SuperAdminDashboardComponent, canActivate: [authGuard, roleGuard], data: { roles: ['SUPERADMIN'] as Role[] } },
 
-  { path: 'inscriptions/nouvelle', component: CreateInscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
-  { path: 'inscriptions/:id/edit', component: EditInscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
-  { path: 'inscriptions/:id/consultation', component: InscriptionDetailComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT','DIRECTEUR','PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
-  { path: 'inscriptions/:id/attachments/:fileName', component: InscriptionAttachmentViewerComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT','DIRECTEUR','PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
-  { path: 'inscriptions/:id/pdf-viewer/:fileName', component: InscriptionPdfViewerComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT','DIRECTEUR','PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
+  { path: 'inscriptions/nouvelle', component: CreateInscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['CANDIDAT','DOCTORANT'] as Role[] } },
+  { path: 'inscriptions/:id/edit', component: EditInscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['CANDIDAT','DOCTORANT'] as Role[] } },
+  { path: 'inscriptions/:id/consultation', component: InscriptionDetailComponent, canActivate: [authGuard, roleGuard], data: { roles: ['CANDIDAT','DOCTORANT','DIRECTEUR','PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
+  { path: 'inscriptions/:id/attachments/:fileName', component: InscriptionAttachmentViewerComponent, canActivate: [authGuard, roleGuard], data: { roles: ['CANDIDAT','DOCTORANT','DIRECTEUR','PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
+  { path: 'inscriptions/:id/pdf-viewer/:fileName', component: InscriptionPdfViewerComponent, canActivate: [authGuard, roleGuard], data: { roles: ['CANDIDAT','DOCTORANT','DIRECTEUR','PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
   { path: 'reinscriptions/nouvelle', component: CreateReinscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
   { path: 'soutenances/mine', component: SoutenanceDoctorantComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT'] as Role[] } },
   { path: 'soutenances/directeur', component: SoutenanceDirecteurComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DIRECTEUR','SUPERADMIN'] as Role[] } },
   { path: 'soutenances/admin', component: SoutenanceAdminComponent, canActivate: [authGuard, roleGuard], data: { roles: ['PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
+  { path: 'soutenances/:id/pdf-viewer/:fileName', component: SoutenancePdfViewerComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DOCTORANT','DIRECTEUR','PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
 
   { path: '**', component: NotFoundComponent }
 ];

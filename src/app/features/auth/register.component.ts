@@ -65,7 +65,8 @@ import { AuthService } from '../../core/services/auth.service';
         <div class="form-group">
           <label for="roles">Type de compte</label>
           <select id="roles" [(ngModel)]="form.roles" name="roles" class="form-input">
-            <option [ngValue]="['DOCTORANT']">Doctorant</option>
+            <option [ngValue]="['CANDIDAT']">Candidat au doctorat</option>
+            <option [ngValue]="['DOCTORANT']">Doctorant (compte déjà validé)</option>
             <option [ngValue]="['DIRECTEUR']">Directeur de thèse</option>
             <option [ngValue]="['PERSONNEL_ADMINISTRATIF']">Personnel administratif</option>
             <option [ngValue]="['SUPERADMIN']">Super Admin</option>
@@ -198,7 +199,7 @@ import { AuthService } from '../../core/services/auth.service';
   `]
 })
 export class RegisterComponent {
-  form = { firstName: '', lastName: '', email: '', password: '', roles: ['DOCTORANT'] };
+  form = { firstName: '', lastName: '', email: '', password: '', roles: ['CANDIDAT'] };
 
   constructor(private auth: AuthService, private router: Router) {}
 
@@ -208,7 +209,10 @@ export class RegisterComponent {
         alert('Compte créé avec succès !');
         this.router.navigateByUrl('/login');
       },
-      error: () => alert('Erreur lors de la création du compte.')
+      error: (err) => {
+        const backendMsg = err?.error?.error || err?.error?.message;
+        alert(backendMsg || 'Erreur lors de la création du compte.');
+      }
     });
   }
 }

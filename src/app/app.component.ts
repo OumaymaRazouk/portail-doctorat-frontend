@@ -39,8 +39,13 @@ export class AppComponent {
       const data = JSON.parse(viewer);
       const id = (data as any).id;
       const fileName = (data as any).fileName;
+      const type = (data as any).type || 'inscription';
       if (id && fileName) {
-        this.router.navigate(['/inscriptions', id, 'pdf-viewer', fileName]);
+        if (type === 'soutenance') {
+          this.router.navigate(['/soutenances', id, 'pdf-viewer', fileName]);
+        } else {
+          this.router.navigate(['/inscriptions', id, 'pdf-viewer', fileName]);
+        }
       }
     } catch {
       // ignore malformed viewer payload

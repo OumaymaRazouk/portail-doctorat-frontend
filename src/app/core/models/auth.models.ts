@@ -1,4 +1,4 @@
-export type Role = 'DOCTORANT' | 'DIRECTEUR' | 'PERSONNEL_ADMINISTRATIF' | 'SUPERADMIN';
+export type Role = 'CANDIDAT' | 'DOCTORANT' | 'DIRECTEUR' | 'PERSONNEL_ADMINISTRATIF' | 'SUPERADMIN';
 
 export interface AuthResponse {
   accessToken: string;
