@@ -148,6 +148,43 @@ export class InscriptionService {
     return this.api.getBlob(`${this.base}/${id}/attachments/${encodeURIComponent(fileName)}`);
   }
 
+  // ====== Documents PDF (document-service) ======
+
+  downloadAttestationInitiale(id: string) {
+    const url = `/documents/inscriptions/${encodeURIComponent(id)}/attestation.pdf`;
+    return this.api.getBlob(url);
+  }
+
+  downloadAttestationReinscription(id: string) {
+    const url = `/documents/inscriptions/${encodeURIComponent(id)}/attestation-reinscription.pdf`;
+    return this.api.getBlob(url);
+  }
+
+  downloadAccuseReception(id: string) {
+    const url = `/documents/inscriptions/${encodeURIComponent(id)}/accuse-reception.pdf`;
+    return this.api.getBlob(url);
+  }
+
+  downloadReponseDecision(id: string) {
+    const url = `/documents/inscriptions/${encodeURIComponent(id)}/REPONSE-decision.pdf`;
+    return this.api.getBlob(url);
+  }
+
+  downloadRapportParcours(doctorantId: string) {
+    const url = `/documents/inscriptions/doctorants/${encodeURIComponent(doctorantId)}/rapport-parcours.pdf`;
+    return this.api.getBlob(url);
+  }
+
+  downloadTableauSuivi() {
+    const url = `/documents/administratif/tableau-suivi.pdf`;
+    return this.api.getBlob(url);
+  }
+
+  downloadTableauSuiviForDoctorant(doctorantId: string) {
+    const url = `/documents/inscriptions/doctorants/${encodeURIComponent(doctorantId)}/tableau-suivi.pdf`;
+    return this.api.getBlob(url);
+  }
+
   getStatsByYear(annee?: string) {
     let url = '/stats/inscriptions';
     if (annee) {

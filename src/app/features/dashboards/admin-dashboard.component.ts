@@ -86,6 +86,7 @@ import { Router } from '@angular/router';
               <th>Année</th>
               <th>Statut</th>
               <th>Sujet</th>
+              <th>Documents</th>
             </tr>
           </thead>
           <tbody>
@@ -94,6 +95,14 @@ import { Router } from '@angular/router';
               <td>{{ i.anneeAcademique }}</td>
               <td>{{ i.status }}</td>
               <td>{{ i.sujetThese }}</td>
+              <td>
+                <button class="btn small secondary" type="button" (click)="downloadRapportParcours(i)">
+                  Rapport parcours
+                </button>
+                <button class="btn small secondary" type="button" style="margin-left: 0.4rem" (click)="downloadTableauSuiviForDoctorant(i)">
+                  Tableau de suivi
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -198,6 +207,10 @@ import { Router } from '@angular/router';
       font-size: 0.85rem;
       color: #b91c1c;
     }
+
+    .actions-docs {
+      margin-top: 0.75rem;
+    }
   `]
 })
 export class AdminDashboardComponent {
@@ -275,5 +288,43 @@ export class AdminDashboardComponent {
   details(i: InscriptionDTO) {
     if (!i.id) return;
     this.router.navigate(['/inscriptions', i.id, 'consultation']);
+  }
+
+  downloadRapportParcours(i: InscriptionDTO) {
+    if (!i.doctorantId) return;
+    this.service.downloadRapportParcours(i.doctorantId).subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `rapport-parcours-${i.doctorantId}.pdf`;
+      a.target = '_blank';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+  }
+
+  downloadTableauSuivi() {
+    this.service.downloadTableauSuivi().subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tableau-suivi-documentation.pdf';
+      a.target = '_blank';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+  }
+  
+  downloadTableauSuiviForDoctorant(i: InscriptionDTO) {
+    if (!i.doctorantId) return;
+    this.service.downloadTableauSuiviForDoctorant(i.doctorantId).subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tableau-suivi-documentation-${i.doctorantId}.pdf`;
+      a.target = '_blank';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
   }
 }

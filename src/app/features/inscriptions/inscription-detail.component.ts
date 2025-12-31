@@ -31,6 +31,43 @@ import { InscriptionDTO, InscriptionService } from '../../core/services/inscript
           </div>
         </div>
 
+        <div class="section actions-docs" *ngIf="inscription.id">
+          <h3>Documents PDF</h3>
+          <div class="actions-row">
+            <button
+              class="btn secondary"
+              type="button"
+              *ngIf="inscription.status && inscription.status !== 'BROUILLON'"
+              (click)="downloadAccuseReception()">
+              Accusé de réception
+            </button>
+
+            <button
+              class="btn secondary"
+              type="button"
+              *ngIf="inscription.status === 'VALIDE' && (!inscription.type || inscription.type === 'INSCRIPTION')"
+              (click)="downloadAttestationInitiale()">
+              Attestation d'inscription initiale
+            </button>
+
+            <button
+              class="btn secondary"
+              type="button"
+              *ngIf="inscription.status === 'VALIDE' && inscription.type === 'REINSCRIPTION'"
+              (click)="downloadAttestationReinscription()">
+              Attestation de réinscription
+            </button>
+
+            <button
+              class="btn secondary"
+              type="button"
+              *ngIf="inscription.status === 'VALIDE' || inscription.status === 'REJETE'"
+              (click)="downloadReponseDecision()">
+              Réponse de décision
+            </button>
+          </div>
+        </div>
+
         <div class="section">
           <h3>Informations personnelles</h3>
           <div class="grid">
@@ -115,6 +152,7 @@ import { InscriptionDTO, InscriptionService } from '../../core/services/inscript
       transform: translateY(-1px);
       box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
     }
+    .actions-docs .actions-row { display:flex; flex-wrap:wrap; gap:8px; }
     .attachments { list-style:none; padding-left:0; margin:0; display:flex; flex-direction:column; gap:4px; }
     .attachments .link { background:none; border:0; padding:0; color:#2563eb; text-decoration:underline; font-size:14px; cursor:pointer; text-align:left; }
   `]
@@ -188,5 +226,47 @@ export class InscriptionDetailComponent {
     const payload = encodeURIComponent(JSON.stringify({ id, fileName }));
     const url = `${window.location.origin}/?viewer=${payload}`;
     window.open(url, '_blank', 'noopener');
+  }
+
+  private openBlobInNewTab(blob: Blob, fileName: string) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.target = '_blank';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  downloadAccuseReception() {
+    const id = this.inscription?.id;
+    if (!id) return;
+    this.service.downloadAccuseReception(id).subscribe(blob => {
+      this.openBlobInNewTab(blob, `accuse-reception-${id}.pdf`);
+    });
+  }
+
+  downloadAttestationInitiale() {
+    const id = this.inscription?.id;
+    if (!id) return;
+    this.service.downloadAttestationInitiale(id).subscribe(blob => {
+      this.openBlobInNewTab(blob, `attestation-inscription-${id}.pdf`);
+    });
+  }
+
+  downloadAttestationReinscription() {
+    const id = this.inscription?.id;
+    if (!id) return;
+    this.service.downloadAttestationReinscription(id).subscribe(blob => {
+      this.openBlobInNewTab(blob, `attestation-reinscription-${id}.pdf`);
+    });
+  }
+
+  downloadReponseDecision() {
+    const id = this.inscription?.id;
+    if (!id) return;
+    this.service.downloadReponseDecision(id).subscribe(blob => {
+      this.openBlobInNewTab(blob, `reponse-decision-${id}.pdf`);
+    });
   }
 }

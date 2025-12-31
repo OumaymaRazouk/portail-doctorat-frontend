@@ -17,6 +17,7 @@ import { SoutenanceDoctorantComponent } from './features/soutenances/soutenance-
 import { SoutenanceDirecteurComponent } from './features/soutenances/soutenance-directeur.component';
 import { SoutenanceAdminComponent } from './features/soutenances/soutenance-admin.component';
 import { SoutenancePdfViewerComponent } from './features/soutenances/soutenance-pdf-viewer.component';
+import { UsersAdminComponent } from './features/users/users-admin.component';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { Role } from './core/models/auth.models';
@@ -31,6 +32,8 @@ export const routes: Routes = [
   { path: 'dashboard/admin', component: AdminDashboardComponent, canActivate: [authGuard, roleGuard], data: { roles: ['PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
   { path: 'dashboard/encadrant', component: EncadrantDashboardComponent, canActivate: [authGuard, roleGuard], data: { roles: ['DIRECTEUR','SUPERADMIN'] as Role[] } },
   { path: 'dashboard/super-admin', component: SuperAdminDashboardComponent, canActivate: [authGuard, roleGuard], data: { roles: ['SUPERADMIN'] as Role[] } },
+
+  { path: 'admin/users', component: UsersAdminComponent, canActivate: [authGuard, roleGuard], data: { roles: ['PERSONNEL_ADMINISTRATIF','SUPERADMIN'] as Role[] } },
 
   { path: 'inscriptions/nouvelle', component: CreateInscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['CANDIDAT','DOCTORANT'] as Role[] } },
   { path: 'inscriptions/:id/edit', component: EditInscriptionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['CANDIDAT','DOCTORANT'] as Role[] } },

@@ -97,6 +97,11 @@ import { SoutenanceService, SoutenanceStatus } from '../../core/services/soutena
       </div>
 
       <h3>Mes demandes</h3>
+      <div class="actions" *ngIf="isDoctorant">
+        <button class="btn secondary" type="button" (click)="downloadRapportParcours()">
+          Télécharger le rapport de parcours
+        </button>
+      </div>
       <div *ngIf="loading">Chargement...</div>
       <div *ngIf="!loading && inscriptions.length === 0">Aucune demande.</div>
       <table *ngIf="!loading && inscriptions.length > 0" class="table">
@@ -380,6 +385,7 @@ export class DoctorantDashboardComponent {
   reinscriptionsCount = 0;
   hasSoutenance = false;
   soutenanceStatus: string | null = null;
+  private doctorantId: string | null = null;
 
   // Flux d'inscription: brouillon -> directeur -> admin -> valide ou rejet
   inscriptionFlow: InscriptionStatus[] = ['BROUILLON', 'EN_ATTENTE_DIRECTEUR', 'EN_ATTENTE_ADMIN', 'VALIDE', 'REJETE'];
@@ -410,6 +416,7 @@ export class DoctorantDashboardComponent {
     this.loading = true;
     this.auth.me().subscribe({
       next: me => {
+        this.doctorantId = me.id;
         this.service.listByDoctorant(me.id).subscribe({
           next: list => {
             this.inscriptions = list;
@@ -518,5 +525,18 @@ export class DoctorantDashboardComponent {
   details(i: InscriptionDTO) {
     if (!i.id) return;
     this.router.navigate(['/inscriptions', i.id, 'consultation']);
+  }
+
+  downloadRapportParcours() {
+    if (!this.doctorantId) return;
+    this.service.downloadRapportParcours(this.doctorantId).subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `rapport-parcours-${this.doctorantId}.pdf`;
+      a.target = '_blank';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
   }
 }

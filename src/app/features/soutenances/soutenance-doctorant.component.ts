@@ -81,6 +81,16 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput } from '../../co
               <li *ngIf="selected.demandeManuscritePath"><a href="#" class="link" (click)="openAttachment(selected, selected.demandeManuscritePath, $event)">{{ selected.demandeManuscritePath }}</a></li>
             </ul>
           </div>
+
+          <div class="section" *ngIf="selected.status === 'SOUTENANCE_AUTORISEE'
+              || selected.status === 'PLANIFICATION_PROPOSEE'
+              || selected.status === 'SOUTENANCE_PLANIFIEE'
+              || selected.status === 'SOUTENANCE_EFFECTUEE'">
+            <h5>Documents PDF</h5>
+            <button type="button" class="btn secondary" (click)="downloadAutorisation(selected)">
+              Autorisation officielle de soutenance
+            </button>
+          </div>
         </div>
 
         <div class="card">
@@ -115,28 +125,6 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput } from '../../co
 
             <div class="grid">
               <div class="row">
-                <label for="pubs">Nombre de publications (Q1/Q2)</label>
-                <input id="pubs" name="pubs" type="number" min="0" [(ngModel)]="form.publicationsCount" class="input" />
-              </div>
-              <div class="row">
-                <label for="comms">Nombre de communications</label>
-                <input id="comms" name="comms" type="number" min="0" [(ngModel)]="form.communicationsCount" class="input" />
-              </div>
-            </div>
-
-            <div class="grid">
-              <div class="row">
-                <label for="heures">Heures de formation cumulées</label>
-                <input id="heures" name="heures" type="number" min="0" [(ngModel)]="form.heuresFormationCumulees" class="input" />
-              </div>
-              <div class="row">
-                <label for="duree">Durée du doctorat (années)</label>
-                <input id="duree" name="duree" type="number" min="1" [(ngModel)]="form.dureeDoctoratAnnees" class="input" />
-              </div>
-            </div>
-
-            <div class="grid">
-              <div class="row">
                 <label for="manuscrit">Manuscrit final (fichier PDF)</label>
                 <input id="manuscrit" name="manuscrit" type="file" accept="application/pdf" (change)="onFileSelected($event, 'manuscrit')" class="input" />
               </div>
@@ -155,36 +143,6 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput } from '../../co
                 <label for="demande">Demande manuscrite (fichier PDF)</label>
                 <input id="demande" name="demande" type="file" accept="application/pdf" (change)="onFileSelected($event, 'demande')" class="input" />
               </div>
-            </div>
-
-            <div class="section">
-              <h5>Prérequis pour la soumission</h5>
-              <ul class="checklist">
-                <li class="check-item" [ngClass]="hasMinPublications() ? 'ok' : 'nok'">
-                  Publications (Q1/Q2) : {{ form.publicationsCount || 0 }} / 2
-                </li>
-                <li class="check-item" [ngClass]="hasMinCommunications() ? 'ok' : 'nok'">
-                  Communications : {{ form.communicationsCount || 0 }} / 2
-                </li>
-                <li class="check-item" [ngClass]="hasMinHeuresFormation() ? 'ok' : 'nok'">
-                  Heures de formation cumulées : {{ form.heuresFormationCumulees || 0 }} / 200
-                </li>
-                <li class="check-item" [ngClass]="hasValidDuree() ? 'ok' : 'nok'">
-                  Durée du doctorat (années) : {{ form.dureeDoctoratAnnees || 0 }} (max 6)
-                </li>
-                <li class="check-item" [ngClass]="hasManuscrit() ? 'ok' : 'nok'">
-                  Manuscrit final (PDF)
-                </li>
-                <li class="check-item" [ngClass]="hasAntiPlagiat() ? 'ok' : 'nok'">
-                  Rapport anti-plagiat (PDF)
-                </li>
-                <li class="check-item" [ngClass]="hasAttestations() ? 'ok' : 'nok'">
-                  Attestations de formations (PDF)
-                </li>
-                <li class="check-item" [ngClass]="hasDemande() ? 'ok' : 'nok'">
-                  Demande manuscrite (PDF)
-                </li>
-              </ul>
             </div>
 
             <div class="actions">
@@ -705,5 +663,18 @@ export class SoutenanceDoctorantComponent {
     const payload = encodeURIComponent(JSON.stringify({ id: s.id, fileName, type: 'soutenance' }));
     const url = `${window.location.origin}/?viewer=${payload}`;
     window.open(url, '_blank', 'noopener');
+  }
+
+  downloadAutorisation(s: SoutenanceDTO) {
+    if (!s.id) return;
+    this.soutenance.downloadAutorisation(s.id).subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `autorisation-${s.id}.pdf`;
+      a.target = '_blank';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
   }
 }

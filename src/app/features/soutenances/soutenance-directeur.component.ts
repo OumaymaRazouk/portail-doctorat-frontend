@@ -162,36 +162,6 @@ import { SoutenanceService, SoutenanceDTO, JuryMemberInput, PlanificationInput }
         </div>
 
         <div class="section">
-          <h4>Prérequis pour la soutenance</h4>
-          <ul class="checklist">
-            <li class="check-item" [ngClass]="hasMinPublications(detailSelected) ? 'ok' : 'nok'">
-              Publications (Q1/Q2) : {{ detailSelected.publicationsCount }} / 2
-            </li>
-            <li class="check-item" [ngClass]="hasMinCommunications(detailSelected) ? 'ok' : 'nok'">
-              Communications : {{ detailSelected.communicationsCount }} / 2
-            </li>
-            <li class="check-item" [ngClass]="hasMinHeuresFormation(detailSelected) ? 'ok' : 'nok'">
-              Heures de formation cumulées : {{ detailSelected.heuresFormationCumulees }} / 200
-            </li>
-            <li class="check-item" [ngClass]="hasValidDuree(detailSelected) ? 'ok' : 'nok'">
-              Durée du doctorat (années) : {{ detailSelected.dureeDoctoratAnnees }} (max 6)
-            </li>
-            <li class="check-item" [ngClass]="hasManuscrit(detailSelected) ? 'ok' : 'nok'">
-              Manuscrit final (PDF)
-            </li>
-            <li class="check-item" [ngClass]="hasAntiPlagiat(detailSelected) ? 'ok' : 'nok'">
-              Rapport anti-plagiat (PDF)
-            </li>
-            <li class="check-item" [ngClass]="hasAttestations(detailSelected) ? 'ok' : 'nok'">
-              Attestations de formations (PDF)
-            </li>
-            <li class="check-item" [ngClass]="hasDemande(detailSelected) ? 'ok' : 'nok'">
-              Demande manuscrite (PDF)
-            </li>
-          </ul>
-        </div>
-
-        <div class="section">
           <h4>Pièces jointes</h4>
           <div *ngIf="!detailHasAnyAttachment()">Aucune pièce jointe.</div>
           <ul *ngIf="detailHasAnyAttachment()" class="attachments">

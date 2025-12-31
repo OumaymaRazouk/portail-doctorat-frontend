@@ -107,6 +107,30 @@ export interface WeeklySoutenanceSummary {
   soutenances?: SoutenanceStatView[];
 }
 
+export interface PrerequisSoutenanceConfig {
+  doctorantId: string;
+  minPublications: number;
+  minCommunications: number;
+  minHeuresFormation: number;
+  maxDureeAnnees: number;
+  requireManuscrit: boolean;
+  requireAntiPlagiat: boolean;
+  requireAttestations: boolean;
+  requireDemandeManuscrite: boolean;
+}
+
+export interface PrerequisConfigInput {
+  doctorantId: string;
+  minPublications: number;
+  minCommunications: number;
+  minHeuresFormation: number;
+  maxDureeAnnees: number;
+  requireManuscrit: boolean;
+  requireAntiPlagiat: boolean;
+  requireAttestations: boolean;
+  requireDemandeManuscrite: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SoutenanceService {
   private api = inject(ApiService);
@@ -127,6 +151,40 @@ export class SoutenanceService {
       url = url + '?' + params.join('&');
     }
     return this.api.get<WeeklySoutenanceSummary[]>(url);
+  }
+
+  getPrerequisConfig(doctorantId: string) {
+    const query = `query PrerequisConfigForDoctorant($doctorantId: ID!) {
+      prerequisConfigForDoctorant(doctorantId: $doctorantId) {
+        doctorantId
+        minPublications
+        minCommunications
+        minHeuresFormation
+        maxDureeAnnees
+        requireManuscrit
+        requireAntiPlagiat
+        requireAttestations
+        requireDemandeManuscrite
+      }
+    }`;
+    return this.execute<{ prerequisConfigForDoctorant: PrerequisSoutenanceConfig | null }>(query, { doctorantId });
+  }
+
+  savePrerequisConfig(input: PrerequisConfigInput) {
+    const query = `mutation SavePrerequisConfig($input: PrerequisConfigInput!) {
+      savePrerequisConfig(input: $input) {
+        doctorantId
+        minPublications
+        minCommunications
+        minHeuresFormation
+        maxDureeAnnees
+        requireManuscrit
+        requireAntiPlagiat
+        requireAttestations
+        requireDemandeManuscrite
+      }
+    }`;
+    return this.execute<{ savePrerequisConfig: PrerequisSoutenanceConfig }>(query, { input });
   }
 
   listForDoctorant(doctorantId: string) {
@@ -373,12 +431,12 @@ export class SoutenanceService {
   }
 
   downloadAutorisation(id: string) {
-    const url = `/soutenance/soutenances/${encodeURIComponent(id)}/autorisation.pdf`;
+    const url = `/documents/soutenances/${encodeURIComponent(id)}/autorisation.pdf`;
     return this.api.getBlob(url);
   }
 
   downloadProcesVerbal(id: string) {
-    const url = `/soutenance/soutenances/${encodeURIComponent(id)}/proces-verbal.pdf`;
+    const url = `/documents/soutenances/${encodeURIComponent(id)}/proces-verbal.pdf`;
     return this.api.getBlob(url);
   }
 

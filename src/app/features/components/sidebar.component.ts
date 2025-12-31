@@ -25,6 +25,9 @@ import { HasRoleDirective } from '../../shared/directives/has-role.directive';
         <a routerLink="/dashboard/admin" class="nav-link">Espace Administratif</a>
       </li>
       <li class="nav-item" *hasRole="['PERSONNEL_ADMINISTRATIF','SUPERADMIN']">
+        <a routerLink="/admin/users" class="nav-link">Utilisateurs</a>
+      </li>
+      <li class="nav-item" *hasRole="['PERSONNEL_ADMINISTRATIF','SUPERADMIN']">
         <a routerLink="/soutenances/admin" class="nav-link">Soutenances (Admin)</a>
       </li>
       <li class="nav-item" *hasRole="'SUPERADMIN'">

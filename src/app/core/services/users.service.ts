@@ -17,4 +17,12 @@ export class UsersService {
     // Gateway path: /users/** -> utilisateurs-service /users/**
     return this.api.get<SimpleUser[]>(`${environment.endpoints.users}/encadrants`);
   }
+
+  listDoctorants() {
+    return this.api.get<SimpleUser[]>(`${environment.endpoints.users}/doctorants`);
+  }
+
+  listCandidats() {
+    return this.api.get<SimpleUser[]>(`${environment.endpoints.users}/candidats`);
+  }
 }
