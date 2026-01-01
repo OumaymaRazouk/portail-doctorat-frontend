@@ -147,8 +147,22 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceStatus, PlanificationInput,
                   <span class="value">{{ prereqDossier.commentaireAdministratif || '-' }}</span>
                 </div>
               </div>
+              <div class="checklist">
+                <div class="check-item" [ngClass]="prereqDossier.publicationsCount >= 2 ? 'ok' : 'nok'">
+                  ✓ Publications: {{ prereqDossier.publicationsCount || 0 }}/2 min. requis
+                </div>
+                <div class="check-item" [ngClass]="prereqDossier.communicationsCount >= 2 ? 'ok' : 'nok'">
+                  ✓ Communications: {{ prereqDossier.communicationsCount || 0 }}/2 min. requis
+                </div>
+                <div class="check-item" [ngClass]="prereqDossier.heuresFormationCumulees >= 200 ? 'ok' : 'nok'">
+                  ✓ Formation: {{ prereqDossier.heuresFormationCumulees || 0 }}/200h min. requises
+                </div>
+                <div class="check-item" [ngClass]="(prereqDossier.dureeDoctoratAnnees || 0) <= 6 ? 'ok' : 'nok'">
+                  ✓ Durée doctorat: {{ prereqDossier.dureeDoctoratAnnees || 0 }} ans / 6 max.
+                </div>
+              </div>
               <div class="actions">
-                <button type="button" class="btn small" (click)="validateAdministratif(true)">Valider administrativement</button>
+                <button type="button" class="btn small" (click)="validateAdministratif(true)">Valider administrativement (heures de formation, pièces justificatives)</button>
                 <button type="button" class="btn small secondary" (click)="validateAdministratif(false)">Refuser administrativement</button>
               </div>
               <div *ngIf="prereqMessage" class="msg">{{ prereqMessage }}</div>
@@ -243,8 +257,8 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceStatus, PlanificationInput,
     .value { font-size:14px; color:#111827; word-break:break-word; }
     .attachments { list-style:none; padding-left:0; margin:4px 0 0 0; display:flex; flex-direction:column; gap:4px; }
     .attachments .link { background:none; border:0; padding:0; color:#2563eb; text-decoration:underline; font-size:14px; cursor:pointer; text-align:left; }
-    .checklist { list-style:none; padding-left:0; margin:4px 0 0 0; }
-    .check-item { font-size:13px; color:#4b5563; }
+    .checklist { list-style:none; padding-left:0; margin:8px 0 8px 0; }
+    .check-item { font-size:13px; color:#4b5563; padding:4px 0; }
     .check-item.ok { color:#16a34a; }
     .check-item.nok { color:#b91c1c; }
   `]

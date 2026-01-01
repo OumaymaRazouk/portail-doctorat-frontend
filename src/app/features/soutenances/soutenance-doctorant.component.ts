@@ -98,7 +98,7 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput, PrerequisDossie
             </form>
 
             <div *ngIf="prereqLocked()" class="info">
-              Votre dossier de prérequis est entièrement validé. Vous pouvez déposer une demande de soutenance.
+              Votre dossier de prérequis est entièrement validé : vérification scientifique par votre directeur (publications, communications), vérification administrative (heures de formation, pièces justificatives) et seuils exigés atteints. Vous pouvez maintenant déposer une demande de soutenance.
             </div>
           </div>
         </div>
@@ -190,7 +190,7 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput, PrerequisDossie
 
           <!-- Formulaire accessible uniquement après validation complète des prérequis -->
           <div *ngIf="!prereqLocked()" class="info">
-            Vous ne pouvez pas encore créer une demande de soutenance. Votre dossier de prérequis doit d'abord être validé scientifiquement par votre directeur et validé administrativement par le service.
+            Vous ne pouvez pas encore créer une demande de soutenance. Votre dossier de prérequis doit d'abord être validé scientifiquement par votre directeur (publications, communications) et validé administrativement par le service (heures de formation, pièces justificatives). Le système vérifie automatiquement que les seuils exigés (publications, formations, etc.) sont atteints avant d'autoriser la demande.
           </div>
 
           <!-- Formulaire visible seulement si aucune soutenance n'existe encore ou si la soutenance courante est un brouillon -->
@@ -604,7 +604,7 @@ export class SoutenanceDoctorantComponent {
     const target = s || this.current;
     if (!target || !target.id) return;
     if (!this.canSubmitSoutenance()) {
-      this.errorMessage = "Vous ne pouvez pas soumettre la soutenance tant que le dossier de prérequis n'est pas validé scientifiquement et administrativement.";
+      this.errorMessage = "Vous ne pouvez pas soumettre la soutenance tant que le dossier de prérequis n'est pas validé scientifiquement par votre directeur (publications, communications) et validé administrativement par le service (heures de formation, pièces justificatives). Le système vérifie automatiquement que les seuils exigés (publications, formations, etc.) sont atteints avant d'autoriser la demande.";
       return;
     }
     this.errorMessage = '';
