@@ -23,10 +23,6 @@ export interface SoutenanceDTO {
   titreTheseDefinitif?: string;
   resumeFinal?: string;
   motsCles?: string[];
-  publicationsCount: number;
-  communicationsCount: number;
-  heuresFormationCumulees: number;
-  dureeDoctoratAnnees: number;
   manuscritPath?: string;
   rapportThesePath?: string;
   rapportAntiPlagiatPath?: string;
@@ -47,10 +43,6 @@ export interface SoutenanceDraftInput {
   titreTheseDefinitif: string;
   resumeFinal: string;
   motsCles: string[];
-  publicationsCount: number;
-  communicationsCount: number;
-  heuresFormationCumulees: number;
-  dureeDoctoratAnnees: number;
   manuscritPath?: string;
   rapportThesePath?: string;
   rapportAntiPlagiatPath?: string;
@@ -131,6 +123,32 @@ export interface PrerequisConfigInput {
   requireDemandeManuscrite: boolean;
 }
 
+export type PrerequisDossierEtat = 'EN_ATTENTE' | 'VALIDE' | 'REFUSE';
+
+export interface PrerequisDossier {
+  doctorantId: string;
+  publicationsCount: number;
+  communicationsCount: number;
+  heuresFormationCumulees: number;
+  dureeDoctoratAnnees: number;
+  etatScientifique: PrerequisDossierEtat;
+  commentaireScientifique?: string;
+  dateValidationScientifique?: string;
+  etatAdministratif: PrerequisDossierEtat;
+  commentaireAdministratif?: string;
+  dateValidationAdministratif?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PrerequisDossierInput {
+  doctorantId: string;
+  publicationsCount: number;
+  communicationsCount: number;
+  heuresFormationCumulees: number;
+  dureeDoctoratAnnees: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SoutenanceService {
   private api = inject(ApiService);
@@ -187,6 +205,72 @@ export class SoutenanceService {
     return this.execute<{ savePrerequisConfig: PrerequisSoutenanceConfig }>(query, { input });
   }
 
+  getPrerequisDossier(doctorantId: string) {
+    const query = `query PrerequisDossierForDoctorant($doctorantId: ID!) {
+      prerequisDossierForDoctorant(doctorantId: $doctorantId) {
+        doctorantId
+        publicationsCount
+        communicationsCount
+        heuresFormationCumulees
+        dureeDoctoratAnnees
+        etatScientifique
+        commentaireScientifique
+        dateValidationScientifique
+        etatAdministratif
+        commentaireAdministratif
+        dateValidationAdministratif
+        createdAt
+        updatedAt
+      }
+    }`;
+    return this.execute<{ prerequisDossierForDoctorant: PrerequisDossier | null }>(query, { doctorantId });
+  }
+
+  savePrerequisDossier(input: PrerequisDossierInput) {
+    const query = `mutation SavePrerequisDossier($input: PrerequisDossierInput!) {
+      savePrerequisDossier(input: $input) {
+        doctorantId
+        publicationsCount
+        communicationsCount
+        heuresFormationCumulees
+        dureeDoctoratAnnees
+        etatScientifique
+        commentaireScientifique
+        dateValidationScientifique
+        etatAdministratif
+        commentaireAdministratif
+        dateValidationAdministratif
+        createdAt
+        updatedAt
+      }
+    }`;
+    return this.execute<{ savePrerequisDossier: PrerequisDossier }>(query, { input });
+  }
+
+  directeurValidePrerequisDossier(doctorantId: string, valide: boolean, commentaire?: string) {
+    const query = `mutation DirecteurValidePrerequisDossier($doctorantId: ID!, $valide: Boolean!, $commentaire: String) {
+      directeurValidePrerequisDossier(doctorantId: $doctorantId, valide: $valide, commentaire: $commentaire) {
+        doctorantId
+        etatScientifique
+        commentaireScientifique
+        dateValidationScientifique
+      }
+    }`;
+    return this.execute<{ directeurValidePrerequisDossier: PrerequisDossier }>(query, { doctorantId, valide, commentaire });
+  }
+
+  adminValidePrerequisDossier(doctorantId: string, valide: boolean, commentaire?: string) {
+    const query = `mutation AdminValidePrerequisDossier($doctorantId: ID!, $valide: Boolean!, $commentaire: String) {
+      adminValidePrerequisDossier(doctorantId: $doctorantId, valide: $valide, commentaire: $commentaire) {
+        doctorantId
+        etatAdministratif
+        commentaireAdministratif
+        dateValidationAdministratif
+      }
+    }`;
+    return this.execute<{ adminValidePrerequisDossier: PrerequisDossier }>(query, { doctorantId, valide, commentaire });
+  }
+
   listForDoctorant(doctorantId: string) {
     const query = `query SoutenancesDoctorant($doctorantId: ID!) {
       soutenancesForDoctorant(doctorantId: $doctorantId) {
@@ -197,10 +281,6 @@ export class SoutenanceService {
         titreTheseDefinitif
         resumeFinal
         motsCles
-        publicationsCount
-        communicationsCount
-        heuresFormationCumulees
-        dureeDoctoratAnnees
         manuscritPath
         rapportThesePath
         rapportAntiPlagiatPath
@@ -224,10 +304,6 @@ export class SoutenanceService {
         titreTheseDefinitif
         resumeFinal
         motsCles
-        publicationsCount
-        communicationsCount
-        heuresFormationCumulees
-        dureeDoctoratAnnees
         manuscritPath
         rapportThesePath
         rapportAntiPlagiatPath
@@ -253,10 +329,6 @@ export class SoutenanceService {
         titreTheseDefinitif
         resumeFinal
         motsCles
-        publicationsCount
-        communicationsCount
-        heuresFormationCumulees
-        dureeDoctoratAnnees
         manuscritPath
         rapportThesePath
         rapportAntiPlagiatPath
@@ -281,10 +353,6 @@ export class SoutenanceService {
         status
         titreTheseDefinitif
         resumeFinal
-        publicationsCount
-        communicationsCount
-        heuresFormationCumulees
-        dureeDoctoratAnnees
         dateSoumission
       }
     }`;

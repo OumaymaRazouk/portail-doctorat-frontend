@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../components/layout.component';
 import { AuthService } from '../../core/services/auth.service';
-import { SoutenanceService, SoutenanceDTO, JuryMemberInput, PlanificationInput } from '../../core/services/soutenance.service';
+import { SoutenanceService, SoutenanceDTO, JuryMemberInput, PlanificationInput, PrerequisDossier } from '../../core/services/soutenance.service';
 
 @Component({
   selector: 'app-soutenance-directeur',
@@ -154,10 +154,40 @@ import { SoutenanceService, SoutenanceDTO, JuryMemberInput, PlanificationInput }
             <div class="col-2"><span class="label">Titre définitif de la thèse</span><span class="value">{{ detailSelected.titreTheseDefinitif }}</span></div>
             <div class="col-2"><span class="label">Résumé final</span><span class="value">{{ detailSelected.resumeFinal }}</span></div>
             <div><span class="label">Mots-clés</span><span class="value">{{ detailSelected.motsCles?.join(', ') }}</span></div>
-            <div><span class="label">Publications (Q1/Q2)</span><span class="value">{{ detailSelected.publicationsCount }}</span></div>
-            <div><span class="label">Communications</span><span class="value">{{ detailSelected.communicationsCount }}</span></div>
-            <div><span class="label">Heures de formation cumulées</span><span class="value">{{ detailSelected.heuresFormationCumulees }}</span></div>
-            <div><span class="label">Durée du doctorat (années)</span><span class="value">{{ detailSelected.dureeDoctoratAnnees }}</span></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Dossier de prérequis</h4>
+          <div *ngIf="prereqLoading">Chargement du dossier de prérequis...</div>
+          <div *ngIf="!prereqLoading">
+            <div *ngIf="prereqDossier; else noDirectorPrereq">
+              <div class="grid">
+                <div><span class="label">Publications (Q1/Q2)</span><span class="value">{{ prereqDossier.publicationsCount }}</span></div>
+                <div><span class="label">Communications</span><span class="value">{{ prereqDossier.communicationsCount }}</span></div>
+                <div><span class="label">Heures de formation cumulées</span><span class="value">{{ prereqDossier.heuresFormationCumulees }}</span></div>
+                <div><span class="label">Durée du doctorat (années)</span><span class="value">{{ prereqDossier.dureeDoctoratAnnees }}</span></div>
+              </div>
+              <div class="grid">
+                <div>
+                  <span class="label">Statut scientifique</span>
+                  <span class="value">{{ prereqDossier.etatScientifique }}</span>
+                </div>
+                <div>
+                  <span class="label">Commentaire scientifique</span>
+                  <span class="value">{{ prereqDossier.commentaireScientifique || '-' }}</span>
+                </div>
+              </div>
+              <div class="actions">
+                <button type="button" class="btn small" (click)="validateScientifique(true)">Valider scientifiquement</button>
+                <button type="button" class="btn small secondary" (click)="validateScientifique(false)">Refuser scientifiquement</button>
+              </div>
+              <div *ngIf="prereqMessage" class="msg">{{ prereqMessage }}</div>
+              <div *ngIf="prereqError" class="err">{{ prereqError }}</div>
+            </div>
+            <ng-template #noDirectorPrereq>
+              <div class="hint">Aucun dossier de prérequis déclaré par le doctorant.</div>
+            </ng-template>
           </div>
         </div>
 
@@ -231,6 +261,11 @@ export class SoutenanceDirecteurComponent {
   savingPlanif = false;
   planifError = '';
   planifMessage = '';
+
+  prereqDossier: PrerequisDossier | null = null;
+  prereqLoading = false;
+  prereqError = '';
+  prereqMessage = '';
 
   constructor(private auth: AuthService, private soutenanceService: SoutenanceService) {
     this.load();
@@ -365,6 +400,10 @@ export class SoutenanceDirecteurComponent {
 
   showDetails(s: SoutenanceDTO) {
     this.detailSelected = s;
+    this.prereqDossier = null;
+    this.prereqError = '';
+    this.prereqMessage = '';
+    this.loadPrereqDossier(s.doctorantId);
   }
 
   downloadPiece(s: SoutenanceDTO, type: 'manuscrit' | 'rapport' | 'attestations' | 'demande') {
@@ -399,21 +438,58 @@ export class SoutenanceDirecteurComponent {
     return !!(s.manuscritPath || s.rapportAntiPlagiatPath || s.attestationsFormationsPath || s.demandeManuscritePath);
   }
 
-  hasMinPublications(s: SoutenanceDTO): boolean {
-    return (s.publicationsCount || 0) >= 2;
+  private loadPrereqDossier(doctorantId: string) {
+    this.prereqLoading = true;
+    this.prereqError = '';
+    this.prereqMessage = '';
+    this.soutenanceService.getPrerequisDossier(doctorantId).subscribe({
+      next: res => {
+        this.prereqLoading = false;
+        this.prereqDossier = res.data?.prerequisDossierForDoctorant || null;
+      },
+      error: e => {
+        console.error(e);
+        this.prereqLoading = false;
+        this.prereqError = 'Erreur lors du chargement du dossier de prérequis';
+      }
+    });
   }
 
-  hasMinCommunications(s: SoutenanceDTO): boolean {
-    return (s.communicationsCount || 0) >= 2;
-  }
-
-  hasMinHeuresFormation(s: SoutenanceDTO): boolean {
-    return (s.heuresFormationCumulees || 0) >= 200;
-  }
-
-  hasValidDuree(s: SoutenanceDTO): boolean {
-    const d = s.dureeDoctoratAnnees || 0;
-    return d > 0 && d <= 6;
+  validateScientifique(valide: boolean) {
+    if (!this.detailSelected) {
+      return;
+    }
+    this.prereqError = '';
+    this.prereqMessage = '';
+    const commentaire = prompt('Commentaire scientifique (optionnel) :') || undefined;
+    this.soutenanceService.directeurValidePrerequisDossier(this.detailSelected.doctorantId, valide, commentaire).subscribe({
+      next: res => {
+        if (res.errors && res.errors.length > 0) {
+          this.prereqError = res.errors[0].message;
+          return;
+        }
+        const dossier = res.data?.directeurValidePrerequisDossier;
+        if (!dossier) {
+          this.prereqError = "Réponse invalide du serveur lors de la validation scientifique des prérequis";
+          return;
+        }
+        const base: PrerequisDossier = this.prereqDossier || {
+          doctorantId: dossier.doctorantId,
+          publicationsCount: 0,
+          communicationsCount: 0,
+          heuresFormationCumulees: 0,
+          dureeDoctoratAnnees: 0,
+          etatScientifique: 'EN_ATTENTE',
+          etatAdministratif: 'EN_ATTENTE'
+        } as PrerequisDossier;
+        this.prereqDossier = { ...base, ...dossier };
+        this.prereqMessage = valide ? 'Pré-requis validés scientifiquement.' : 'Pré-requis refusés scientifiquement.';
+      },
+      error: e => {
+        console.error(e);
+        this.prereqError = 'Erreur lors de la validation scientifique des prérequis';
+      }
+    });
   }
 
   hasManuscrit(s: SoutenanceDTO): boolean {

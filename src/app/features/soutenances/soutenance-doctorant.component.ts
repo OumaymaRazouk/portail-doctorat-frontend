@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../components/layout.component';
 import { AuthService } from '../../core/services/auth.service';
 import { UsersService, SimpleUser } from '../../core/services/users.service';
-import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput } from '../../core/services/soutenance.service';
+import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput, PrerequisDossier, PrerequisDossierInput } from '../../core/services/soutenance.service';
 
 @Component({
   selector: 'app-soutenance-doctorant',
@@ -15,6 +15,94 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput } from '../../co
       <div *ngIf="loading" class="info">Chargement...</div>
 
       <div *ngIf="!loading" class="content-wrapper">
+        <div class="card status-card">
+          <h4>Dossier de prérequis</h4>
+          <div *ngIf="prereqLoading" class="info">Chargement du dossier de prérequis...</div>
+          <div *ngIf="!prereqLoading">
+            <div class="section">
+              <div class="grid">
+                <div>
+                  <span class="label">Statut scientifique</span>
+                  <span class="badge" [ngClass]="badgeClassForEtat(prereqDossier?.etatScientifique)">
+                    {{ prereqDossier?.etatScientifique || 'EN_ATTENTE' }}
+                  </span>
+                </div>
+                <div>
+                  <span class="label">Statut administratif</span>
+                  <span class="badge" [ngClass]="badgeClassForEtat(prereqDossier?.etatAdministratif)">
+                    {{ prereqDossier?.etatAdministratif || 'EN_ATTENTE' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <form (ngSubmit)="onSavePrereqDossier()" class="form" *ngIf="!prereqLocked()">
+              <div class="grid">
+                <div class="row">
+                  <label for="prereqPublicationsCount">Nombre de publications Q1/Q2</label>
+                  <input
+                    id="prereqPublicationsCount"
+                    name="prereqPublicationsCount"
+                    type="number"
+                    min="0"
+                    class="input"
+                    [(ngModel)]="prereqForm.publicationsCount"
+                  />
+                </div>
+                <div class="row">
+                  <label for="prereqCommunicationsCount">Nombre de communications / conférences</label>
+                  <input
+                    id="prereqCommunicationsCount"
+                    name="prereqCommunicationsCount"
+                    type="number"
+                    min="0"
+                    class="input"
+                    [(ngModel)]="prereqForm.communicationsCount"
+                  />
+                </div>
+              </div>
+
+              <div class="grid">
+                <div class="row">
+                  <label for="prereqHeuresFormationCumulees">Heures de formation doctorale cumulées</label>
+                  <input
+                    id="prereqHeuresFormationCumulees"
+                    name="prereqHeuresFormationCumulees"
+                    type="number"
+                    min="0"
+                    class="input"
+                    [(ngModel)]="prereqForm.heuresFormationCumulees"
+                  />
+                </div>
+                <div class="row">
+                  <label for="prereqDureeDoctoratAnnees">Durée du doctorat (années)</label>
+                  <input
+                    id="prereqDureeDoctoratAnnees"
+                    name="prereqDureeDoctoratAnnees"
+                    type="number"
+                    min="0"
+                    class="input"
+                    [(ngModel)]="prereqForm.dureeDoctoratAnnees"
+                  />
+                </div>
+              </div>
+
+              <div class="actions">
+                <button type="submit" class="btn" [disabled]="prereqSaving">
+                  {{ prereqDossier ? 'Mettre à jour le dossier' : 'Enregistrer le dossier' }}
+                </button>
+              </div>
+
+              <div *ngIf="prereqError" class="error">{{ prereqError }}</div>
+              <div *ngIf="prereqSuccess" class="success">{{ prereqSuccess }}</div>
+            </form>
+
+            <div *ngIf="prereqLocked()" class="info">
+              Votre dossier de prérequis est entièrement validé. Vous pouvez déposer une demande de soutenance.
+            </div>
+          </div>
+        </div>
+
         <div class="card" *ngIf="soutenances.length > 0">
           <h4>Mes soutenances</h4>
           <table class="table">
@@ -36,6 +124,14 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput } from '../../co
                 <td>
                   <button type="button" class="btn secondary" *ngIf="s.status === 'BROUILLON'" (click)="editDraft(s)">Modifier</button>
                   <button type="button" class="btn secondary" *ngIf="s.status === 'BROUILLON'" (click)="deleteDraft(s)">Supprimer</button>
+                  <button
+                    type="button"
+                    class="btn"
+                    *ngIf="s.status === 'BROUILLON'"
+                    [disabled]="!canSubmitSoutenance() || submitting"
+                    (click)="onSubmit(s)">
+                    Soumettre
+                  </button>
                   <button type="button" class="btn secondary" (click)="selectSoutenance(s)">Détail</button>
                 </td>
               </tr>
@@ -64,10 +160,6 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput } from '../../co
               <div class="col-2"><span class="label">Titre définitif</span><span class="value">{{ selected.titreTheseDefinitif }}</span></div>
               <div class="col-2"><span class="label">Résumé final</span><span class="value">{{ selected.resumeFinal }}</span></div>
               <div><span class="label">Mots-clés</span><span class="value">{{ selected.motsCles?.join(', ') }}</span></div>
-              <div><span class="label">Publications (Q1/Q2)</span><span class="value">{{ selected.publicationsCount }}</span></div>
-              <div><span class="label">Communications</span><span class="value">{{ selected.communicationsCount }}</span></div>
-              <div><span class="label">Heures de formation cumulées</span><span class="value">{{ selected.heuresFormationCumulees }}</span></div>
-              <div><span class="label">Durée du doctorat (années)</span><span class="value">{{ selected.dureeDoctoratAnnees }}</span></div>
             </div>
           </div>
 
@@ -96,8 +188,13 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput } from '../../co
         <div class="card">
           <h4>Formulaires de demande de soutenance</h4>
 
+          <!-- Formulaire accessible uniquement après validation complète des prérequis -->
+          <div *ngIf="!prereqLocked()" class="info">
+            Vous ne pouvez pas encore créer une demande de soutenance. Votre dossier de prérequis doit d'abord être validé scientifiquement par votre directeur et validé administrativement par le service.
+          </div>
+
           <!-- Formulaire visible seulement si aucune soutenance n'existe encore ou si la soutenance courante est un brouillon -->
-          <form (ngSubmit)="onSaveDraft()" class="form" *ngIf="doctorantId && (soutenances.length === 0 || editingDraft)">
+          <form (ngSubmit)="onSaveDraft()" class="form" *ngIf="prereqLocked() && doctorantId && (soutenances.length === 0 || editingDraft)">
             <div class="row">
               <label for="directeurId">Directeur de thèse</label>
               <select id="directeurId" name="directeurId" [(ngModel)]="form.directeurId" required class="input">
@@ -122,6 +219,8 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput } from '../../co
               <label for="motsCles">Mots-clés (séparés par des virgules)</label>
               <input id="motsCles" name="motsCles" [(ngModel)]="motsClesText" class="input" />
             </div>
+
+            <!-- Déclaration des prérequis quantitatifs par le doctorant -->
 
             <div class="grid">
               <div class="row">
@@ -148,9 +247,6 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceDraftInput } from '../../co
             <div class="actions">
               <button type="submit" class="btn" [disabled]="saving">
                 {{ current ? 'Mettre à jour le brouillon' : 'Enregistrer le brouillon' }}
-              </button>
-              <button type="button" class="btn secondary" (click)="onSubmit()" [disabled]="submitting || !current || current.status !== 'BROUILLON'">
-                Soumettre la soutenance
               </button>
             </div>
 
@@ -232,16 +328,25 @@ export class SoutenanceDoctorantComponent {
   selectedAttestationsFile: File | null = null;
   selectedDemandeFile: File | null = null;
 
-  form: SoutenanceDraftInput & { directeurId: string } = {
+  prereqDossier: PrerequisDossier | null = null;
+  prereqForm: PrerequisDossierInput = {
+    doctorantId: '',
+    publicationsCount: 0,
+    communicationsCount: 0,
+    heuresFormationCumulees: 0,
+    dureeDoctoratAnnees: 0
+  };
+  prereqLoading = false;
+  prereqSaving = false;
+  prereqError = '';
+  prereqSuccess = '';
+
+  form: SoutenanceDraftInput = {
     doctorantId: '',
     directeurId: '',
     titreTheseDefinitif: '',
     resumeFinal: '',
     motsCles: [],
-    publicationsCount: 0,
-    communicationsCount: 0,
-    heuresFormationCumulees: 0,
-    dureeDoctoratAnnees: 3,
     manuscritPath: '',
     rapportThesePath: '',
     rapportAntiPlagiatPath: '',
@@ -265,7 +370,9 @@ export class SoutenanceDoctorantComponent {
       next: (me) => {
         this.doctorantId = me.id;
         this.form.doctorantId = me.id;
+        this.prereqForm.doctorantId = me.id;
         this.loadSoutenances();
+        this.loadPrereqDossier();
       },
       error: () => {
         this.loading = false;
@@ -278,58 +385,70 @@ export class SoutenanceDoctorantComponent {
     });
   }
 
+  onSavePrereqDossier() {
+    if (!this.doctorantId) {
+      return;
+    }
+    this.prereqError = '';
+    this.prereqSuccess = '';
+    this.prereqSaving = true;
+
+    const input: PrerequisDossierInput = {
+      doctorantId: this.doctorantId,
+      publicationsCount: Number(this.prereqForm.publicationsCount || 0),
+      communicationsCount: Number(this.prereqForm.communicationsCount || 0),
+      heuresFormationCumulees: Number(this.prereqForm.heuresFormationCumulees || 0),
+      dureeDoctoratAnnees: Number(this.prereqForm.dureeDoctoratAnnees || 0)
+    };
+
+    this.soutenance.savePrerequisDossier(input).subscribe({
+      next: (res) => {
+        this.prereqSaving = false;
+        if (res.errors && res.errors.length > 0) {
+          this.prereqError = res.errors[0].message;
+          return;
+        }
+        const dossier = res.data?.savePrerequisDossier || null;
+        if (!dossier) {
+          this.prereqError = "Réponse invalide du serveur lors de l'enregistrement du dossier de prérequis";
+          return;
+        }
+        this.prereqDossier = dossier;
+        this.prereqForm = {
+          doctorantId: dossier.doctorantId,
+          publicationsCount: dossier.publicationsCount,
+          communicationsCount: dossier.communicationsCount,
+          heuresFormationCumulees: dossier.heuresFormationCumulees,
+          dureeDoctoratAnnees: dossier.dureeDoctoratAnnees
+        };
+        this.prereqSuccess = 'Dossier de prérequis enregistré avec succès';
+      },
+      error: (err) => {
+        console.error(err);
+        this.prereqSaving = false;
+        this.prereqError = "Erreur lors de l'enregistrement du dossier de prérequis";
+      }
+    });
+  }
+
   private loadSoutenances() {
-    if (!this.doctorantId) { this.loading = false; return; }
+    if (!this.doctorantId) {
+      this.loading = false;
+      return;
+    }
     this.soutenance.listForDoctorant(this.doctorantId).subscribe({
       next: (res) => {
-        const list = res.data?.soutenancesForDoctorant || [];
-        this.soutenances = list;
-        this.current = list.find(s => s.status === 'BROUILLON') || null;
-        this.selected = list.length > 0 ? list[0] : null;
-        this.editingDraft = list.length === 0;
-
-        if (this.current) {
-          this.form = {
-            doctorantId: this.current.doctorantId,
-            directeurId: this.current.directeurId,
-            titreTheseDefinitif: this.current.titreTheseDefinitif || '',
-            resumeFinal: this.current.resumeFinal || '',
-            motsCles: this.current.motsCles || [],
-            publicationsCount: this.current.publicationsCount,
-            communicationsCount: this.current.communicationsCount,
-            heuresFormationCumulees: this.current.heuresFormationCumulees,
-            dureeDoctoratAnnees: this.current.dureeDoctoratAnnees,
-            manuscritPath: this.current.manuscritPath || '',
-            rapportThesePath: this.current.rapportThesePath || '',
-            rapportAntiPlagiatPath: this.current.rapportAntiPlagiatPath || '',
-            preuvesPublicationsPath: this.current.preuvesPublicationsPath || '',
-            preuvesCommunicationsPath: this.current.preuvesCommunicationsPath || '',
-            attestationsFormationsPath: this.current.attestationsFormationsPath || '',
-            demandeManuscritePath: this.current.demandeManuscritePath || ''
-          };
-          this.motsClesText = (this.form.motsCles || []).join(', ');
-        } else {
-          this.form = {
-            doctorantId: this.doctorantId || '',
-            directeurId: '',
-            titreTheseDefinitif: '',
-            resumeFinal: '',
-            motsCles: [],
-            publicationsCount: 0,
-            communicationsCount: 0,
-            heuresFormationCumulees: 0,
-            dureeDoctoratAnnees: 3,
-            manuscritPath: '',
-            rapportThesePath: '',
-            rapportAntiPlagiatPath: '',
-            preuvesPublicationsPath: '',
-            preuvesCommunicationsPath: '',
-            attestationsFormationsPath: '',
-            demandeManuscritePath: ''
-          };
-          this.motsClesText = '';
-        }
+        this.soutenances = res.data?.soutenancesForDoctorant || [];
         this.loading = false;
+        if (this.soutenances.length > 0) {
+          this.current = this.soutenances.find(s => s.status === 'BROUILLON') || null;
+          this.selected = this.soutenances[0];
+          this.editingDraft = !!this.current;
+        } else {
+          this.current = null;
+          this.selected = null;
+          this.editingDraft = true;
+        }
       },
       error: (err) => {
         console.error(err);
@@ -338,25 +457,42 @@ export class SoutenanceDoctorantComponent {
     });
   }
 
-  onFileSelected(event: Event, type: 'manuscrit' | 'antiPlagiat' | 'attestations' | 'demande') {
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) {
+  private loadPrereqDossier() {
+    if (!this.doctorantId) {
       return;
     }
-    const file = input.files[0];
-
-    if (type === 'manuscrit') {
-      this.selectedManuscritFile = file;
-    } else if (type === 'antiPlagiat') {
-      this.selectedAntiPlagiatFile = file;
-    } else if (type === 'attestations') {
-      this.selectedAttestationsFile = file;
-    } else if (type === 'demande') {
-      this.selectedDemandeFile = file;
-    }
-
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.prereqLoading = true;
+    this.prereqError = '';
+    this.prereqSuccess = '';
+    this.soutenance.getPrerequisDossier(this.doctorantId).subscribe({
+      next: (res) => {
+        this.prereqLoading = false;
+        const dossier = res.data?.prerequisDossierForDoctorant || null;
+        this.prereqDossier = dossier;
+        if (dossier) {
+          this.prereqForm = {
+            doctorantId: dossier.doctorantId,
+            publicationsCount: dossier.publicationsCount,
+            communicationsCount: dossier.communicationsCount,
+            heuresFormationCumulees: dossier.heuresFormationCumulees,
+            dureeDoctoratAnnees: dossier.dureeDoctoratAnnees
+          };
+        } else {
+          this.prereqForm = {
+            doctorantId: this.doctorantId || '',
+            publicationsCount: 0,
+            communicationsCount: 0,
+            heuresFormationCumulees: 0,
+            dureeDoctoratAnnees: 0
+          };
+        }
+      },
+      error: (err) => {
+        console.error(err);
+        this.prereqLoading = false;
+        this.prereqError = "Erreur lors du chargement du dossier de prérequis";
+      }
+    });
   }
 
   onSaveDraft() {
@@ -376,11 +512,7 @@ export class SoutenanceDoctorantComponent {
       directeurId: this.form.directeurId,
       titreTheseDefinitif: this.form.titreTheseDefinitif,
       resumeFinal: this.form.resumeFinal,
-      motsCles: motsClesList,
-      publicationsCount: Number(this.form.publicationsCount || 0),
-      communicationsCount: Number(this.form.communicationsCount || 0),
-      heuresFormationCumulees: Number(this.form.heuresFormationCumulees || 0),
-      dureeDoctoratAnnees: Number(this.form.dureeDoctoratAnnees || 0)
+      motsCles: motsClesList
     };
     this.soutenance.saveDraft(input).subscribe({
       next: (res) => {
@@ -451,12 +583,34 @@ export class SoutenanceDoctorantComponent {
     });
   }
 
-  onSubmit() {
-    if (!this.current) return;
+  onFileSelected(event: Event, type: 'manuscrit' | 'antiPlagiat' | 'attestations' | 'demande') {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+    const file = input.files[0];
+    if (type === 'manuscrit') {
+      this.selectedManuscritFile = file;
+    } else if (type === 'antiPlagiat') {
+      this.selectedAntiPlagiatFile = file;
+    } else if (type === 'attestations') {
+      this.selectedAttestationsFile = file;
+    } else if (type === 'demande') {
+      this.selectedDemandeFile = file;
+    }
+  }
+
+  onSubmit(s?: SoutenanceDTO) {
+    const target = s || this.current;
+    if (!target || !target.id) return;
+    if (!this.canSubmitSoutenance()) {
+      this.errorMessage = "Vous ne pouvez pas soumettre la soutenance tant que le dossier de prérequis n'est pas validé scientifiquement et administrativement.";
+      return;
+    }
     this.errorMessage = '';
     this.successMessage = '';
     this.submitting = true;
-    this.soutenance.submit(this.current.id).subscribe({
+    this.soutenance.submit(target.id).subscribe({
       next: (res) => {
         this.submitting = false;
         if (res.errors && res.errors.length > 0) {
@@ -493,6 +647,30 @@ export class SoutenanceDoctorantComponent {
     return '';
   }
 
+  prereqLocked(): boolean {
+    if (!this.prereqDossier) {
+      return false;
+    }
+    return this.prereqDossier.etatScientifique === 'VALIDE' && this.prereqDossier.etatAdministratif === 'VALIDE';
+  }
+
+  canSubmitSoutenance(): boolean {
+    return this.prereqLocked();
+  }
+
+  badgeClassForEtat(etat: string | undefined | null) {
+    if (etat === 'VALIDE') {
+      return 'ok';
+    }
+    if (etat === 'REFUSE') {
+      return 'err';
+    }
+    if (etat === 'EN_ATTENTE') {
+      return 'warn';
+    }
+    return '';
+  }
+
   currentStep(): number {
     const s = this.current?.status;
     if (!s) return 0;
@@ -514,19 +692,19 @@ export class SoutenanceDoctorantComponent {
   }
 
   hasMinPublications(): boolean {
-    return (this.form.publicationsCount || 0) >= 2;
+    return (this.prereqForm.publicationsCount || 0) >= 2;
   }
 
   hasMinCommunications(): boolean {
-    return (this.form.communicationsCount || 0) >= 2;
+    return (this.prereqForm.communicationsCount || 0) >= 2;
   }
 
   hasMinHeuresFormation(): boolean {
-    return (this.form.heuresFormationCumulees || 0) >= 200;
+    return (this.prereqForm.heuresFormationCumulees || 0) >= 200;
   }
 
   hasValidDuree(): boolean {
-    const d = this.form.dureeDoctoratAnnees || 0;
+    const d = this.prereqForm.dureeDoctoratAnnees || 0;
     return d > 0 && d <= 6;
   }
 
@@ -577,10 +755,6 @@ export class SoutenanceDoctorantComponent {
       titreTheseDefinitif: s.titreTheseDefinitif || '',
       resumeFinal: s.resumeFinal || '',
       motsCles: s.motsCles || [],
-      publicationsCount: s.publicationsCount,
-      communicationsCount: s.communicationsCount,
-      heuresFormationCumulees: s.heuresFormationCumulees,
-      dureeDoctoratAnnees: s.dureeDoctoratAnnees,
       manuscritPath: s.manuscritPath || '',
       rapportThesePath: s.rapportThesePath || '',
       rapportAntiPlagiatPath: s.rapportAntiPlagiatPath || '',
@@ -617,10 +791,6 @@ export class SoutenanceDoctorantComponent {
             titreTheseDefinitif: '',
             resumeFinal: '',
             motsCles: [],
-            publicationsCount: 0,
-            communicationsCount: 0,
-            heuresFormationCumulees: 0,
-            dureeDoctoratAnnees: 3,
             manuscritPath: '',
             rapportThesePath: '',
             rapportAntiPlagiatPath: '',
