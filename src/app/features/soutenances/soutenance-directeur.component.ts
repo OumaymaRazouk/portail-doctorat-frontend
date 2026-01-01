@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../components/layout.component';
 import { AuthService } from '../../core/services/auth.service';
+import { InscriptionDTO, InscriptionService } from '../../core/services/inscription.service';
 import { SoutenanceService, SoutenanceDTO, JuryMemberInput, PlanificationInput, PrerequisDossier } from '../../core/services/soutenance.service';
 
 @Component({
@@ -54,6 +55,41 @@ import { SoutenanceService, SoutenanceDTO, JuryMemberInput, PlanificationInput, 
 
         <div *ngIf="message" class="msg">{{ message }}</div>
         <div *ngIf="error" class="err">{{ error }}</div>
+      </div>
+
+      <div class="card">
+        <h3>Dossiers de prérequis - Avis scientifique</h3>
+        <div *ngIf="pendingPrereqLoading">Chargement...</div>
+        <div *ngIf="!pendingPrereqLoading && pendingPrereqDossiers.length === 0" class="hint">Aucun dossier de prérequis en attente.</div>
+
+        <table *ngIf="!pendingPrereqLoading && pendingPrereqDossiers.length > 0" class="table">
+          <thead>
+          <tr>
+            <th>Doctorant</th>
+            <th>Publications</th>
+            <th>Communications</th>
+            <th>Heures formation</th>
+            <th>Durée (ans)</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let d of pendingPrereqDossiers">
+            <td>{{ d.doctorantId }}</td>
+            <td>{{ d.publicationsCount }}</td>
+            <td>{{ d.communicationsCount }}</td>
+            <td>{{ d.heuresFormationCumulees }}</td>
+            <td>{{ d.dureeDoctoratAnnees }}</td>
+            <td>
+              <button type="button" class="btn small" (click)="validateScientifiqueDossier(d, true)">Avis favorable</button>
+              <button type="button" class="btn small secondary" (click)="validateScientifiqueDossier(d, false)">Avis défavorable</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="pendingPrereqMessage" class="msg">{{ pendingPrereqMessage }}</div>
+        <div *ngIf="pendingPrereqError" class="err">{{ pendingPrereqError }}</div>
       </div>
 
       <div class="card" *ngIf="selected">
@@ -269,6 +305,14 @@ export class SoutenanceDirecteurComponent {
   message = '';
   error = '';
 
+  directeurId: string | null = null;
+  supervisedDoctorantIds: string[] = [];
+
+  pendingPrereqDossiers: PrerequisDossier[] = [];
+  pendingPrereqLoading = false;
+  pendingPrereqError = '';
+  pendingPrereqMessage = '';
+
   selected: SoutenanceDTO | null = null;
   detailSelected: SoutenanceDTO | null = null;
   juryMembers: JuryMemberInput[] = [
@@ -291,7 +335,7 @@ export class SoutenanceDirecteurComponent {
   prereqError = '';
   prereqMessage = '';
 
-  constructor(private auth: AuthService, private soutenanceService: SoutenanceService) {
+  constructor(private auth: AuthService, private soutenanceService: SoutenanceService, private inscriptions: InscriptionService) {
     this.load();
   }
 
@@ -299,21 +343,87 @@ export class SoutenanceDirecteurComponent {
     this.loading = true; this.message = ''; this.error = '';
     this.auth.me().subscribe({
       next: me => {
+        this.directeurId = me.id;
         this.soutenanceService.listForDirecteur(me.id).subscribe({
           next: res => {
             this.soutenances = res.data?.soutenancesForDirecteur || [];
             this.loading = false;
+            this.loadSupervisedDoctorantsAndPendingPrereqs(me.id);
           },
           error: e => {
             console.error(e);
             this.error = 'Erreur lors du chargement des soutenances';
             this.loading = false;
+            this.loadSupervisedDoctorantsAndPendingPrereqs(me.id);
           }
         });
       },
       error: () => {
         this.error = 'Impossible de charger le profil directeur';
         this.loading = false;
+      }
+    });
+  }
+
+  private loadSupervisedDoctorantsAndPendingPrereqs(directeurId: string) {
+    this.supervisedDoctorantIds = [];
+    this.inscriptions.listByDirecteur(directeurId).subscribe({
+      next: (list: InscriptionDTO[]) => {
+        const ids = (list || []).map(i => i.doctorantId).filter(Boolean);
+        this.supervisedDoctorantIds = Array.from(new Set(ids));
+        this.loadPendingPrereqs();
+      },
+      error: () => {
+        this.supervisedDoctorantIds = [];
+        this.loadPendingPrereqs();
+      }
+    });
+  }
+
+  private loadPendingPrereqs() {
+    this.pendingPrereqLoading = true;
+    this.pendingPrereqError = '';
+    this.pendingPrereqMessage = '';
+    this.soutenanceService.listPrerequisDossiersPendingScientifique().subscribe({
+      next: res => {
+        this.pendingPrereqLoading = false;
+        if (res.errors && res.errors.length > 0) {
+          this.pendingPrereqError = res.errors[0].message;
+          this.pendingPrereqDossiers = [];
+          return;
+        }
+        const all = res.data?.prerequisDossiersPendingScientifique || [];
+        const ids = this.supervisedDoctorantIds || [];
+        this.pendingPrereqDossiers = ids.length > 0 ? all.filter(d => ids.includes(d.doctorantId)) : all;
+      },
+      error: e => {
+        console.error(e);
+        this.pendingPrereqLoading = false;
+        this.pendingPrereqError = 'Erreur lors du chargement des dossiers de prérequis en attente';
+        this.pendingPrereqDossiers = [];
+      }
+    });
+  }
+
+  validateScientifiqueDossier(dossier: PrerequisDossier, valide: boolean) {
+    if (!dossier) {
+      return;
+    }
+    this.pendingPrereqError = '';
+    this.pendingPrereqMessage = '';
+    const commentaire = prompt('Commentaire scientifique (optionnel) :') || undefined;
+    this.soutenanceService.directeurValidePrerequisDossier(dossier.doctorantId, valide, commentaire).subscribe({
+      next: res => {
+        if (res.errors && res.errors.length > 0) {
+          this.pendingPrereqError = res.errors[0].message;
+          return;
+        }
+        this.pendingPrereqMessage = valide ? 'Avis scientifique favorable enregistré.' : 'Avis scientifique défavorable enregistré.';
+        this.pendingPrereqDossiers = this.pendingPrereqDossiers.filter(d => d.doctorantId !== dossier.doctorantId);
+      },
+      error: e => {
+        console.error(e);
+        this.pendingPrereqError = 'Erreur lors de la validation scientifique du dossier de prérequis';
       }
     });
   }

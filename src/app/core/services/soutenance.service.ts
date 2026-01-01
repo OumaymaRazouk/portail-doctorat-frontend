@@ -226,6 +226,48 @@ export class SoutenanceService {
     return this.execute<{ prerequisDossierForDoctorant: PrerequisDossier | null }>(query, { doctorantId });
   }
 
+  listPrerequisDossiersPendingScientifique() {
+    const query = `query PrerequisDossiersPendingScientifique {
+      prerequisDossiersPendingScientifique {
+        doctorantId
+        publicationsCount
+        communicationsCount
+        heuresFormationCumulees
+        dureeDoctoratAnnees
+        etatScientifique
+        commentaireScientifique
+        dateValidationScientifique
+        etatAdministratif
+        commentaireAdministratif
+        dateValidationAdministratif
+        createdAt
+        updatedAt
+      }
+    }`;
+    return this.execute<{ prerequisDossiersPendingScientifique: PrerequisDossier[] }>(query);
+  }
+
+  listPrerequisDossiersPendingAdministratif() {
+    const query = `query PrerequisDossiersPendingAdministratif {
+      prerequisDossiersPendingAdministratif {
+        doctorantId
+        publicationsCount
+        communicationsCount
+        heuresFormationCumulees
+        dureeDoctoratAnnees
+        etatScientifique
+        commentaireScientifique
+        dateValidationScientifique
+        etatAdministratif
+        commentaireAdministratif
+        dateValidationAdministratif
+        createdAt
+        updatedAt
+      }
+    }`;
+    return this.execute<{ prerequisDossiersPendingAdministratif: PrerequisDossier[] }>(query);
+  }
+
   savePrerequisDossier(input: PrerequisDossierInput) {
     const query = `mutation SavePrerequisDossier($input: PrerequisDossierInput!) {
       savePrerequisDossier(input: $input) {

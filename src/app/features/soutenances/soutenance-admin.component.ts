@@ -11,6 +11,43 @@ import { SoutenanceService, SoutenanceDTO, SoutenanceStatus, PlanificationInput,
   template: `
     <app-layout title="Soutenances - Espace Administratif">
       <div class="card">
+        <h3>Dossiers de prérequis - Vérification administrative</h3>
+        <div *ngIf="pendingPrereqLoading">Chargement...</div>
+        <div *ngIf="!pendingPrereqLoading && pendingPrereqDossiers.length === 0" class="hint">Aucun dossier de prérequis en attente.</div>
+
+        <table *ngIf="!pendingPrereqLoading && pendingPrereqDossiers.length > 0" class="table">
+          <thead>
+          <tr>
+            <th>Doctorant</th>
+            <th>Publications</th>
+            <th>Communications</th>
+            <th>Heures formation</th>
+            <th>Durée (ans)</th>
+            <th>Statut scientifique</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let d of pendingPrereqDossiers">
+            <td>{{ d.doctorantId }}</td>
+            <td>{{ d.publicationsCount }}</td>
+            <td>{{ d.communicationsCount }}</td>
+            <td>{{ d.heuresFormationCumulees }}</td>
+            <td>{{ d.dureeDoctoratAnnees }}</td>
+            <td>{{ d.etatScientifique }}</td>
+            <td>
+              <button type="button" class="btn small" (click)="validateAdministratifDossier(d, true)">Valider</button>
+              <button type="button" class="btn small secondary" (click)="validateAdministratifDossier(d, false)">Refuser</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="pendingPrereqMessage" class="msg">{{ pendingPrereqMessage }}</div>
+        <div *ngIf="pendingPrereqError" class="err">{{ pendingPrereqError }}</div>
+      </div>
+
+      <div class="card">
         <div class="filters">
           <label>Filtrer par statut :</label>
           <select class="input" [(ngModel)]="statusFilter" (change)="load()">
@@ -269,6 +306,11 @@ export class SoutenanceAdminComponent {
   message = '';
   error = '';
 
+  pendingPrereqDossiers: PrerequisDossier[] = [];
+  pendingPrereqLoading = false;
+  pendingPrereqError = '';
+  pendingPrereqMessage = '';
+
   allStatuses: SoutenanceStatus[] = [
     'BROUILLON',
     'SOUMIS',
@@ -302,6 +344,53 @@ export class SoutenanceAdminComponent {
   constructor(private soutenanceService: SoutenanceService) {
     this.load();
     this.loadWeeklyStats();
+    this.loadPendingPrereqs();
+  }
+
+  private loadPendingPrereqs() {
+    this.pendingPrereqLoading = true;
+    this.pendingPrereqError = '';
+    this.pendingPrereqMessage = '';
+    this.soutenanceService.listPrerequisDossiersPendingAdministratif().subscribe({
+      next: res => {
+        this.pendingPrereqLoading = false;
+        if (res.errors && res.errors.length > 0) {
+          this.pendingPrereqError = res.errors[0].message;
+          this.pendingPrereqDossiers = [];
+          return;
+        }
+        this.pendingPrereqDossiers = res.data?.prerequisDossiersPendingAdministratif || [];
+      },
+      error: e => {
+        console.error(e);
+        this.pendingPrereqLoading = false;
+        this.pendingPrereqError = 'Erreur lors du chargement des dossiers de prérequis en attente';
+        this.pendingPrereqDossiers = [];
+      }
+    });
+  }
+
+  validateAdministratifDossier(dossier: PrerequisDossier, valide: boolean) {
+    if (!dossier) {
+      return;
+    }
+    this.pendingPrereqError = '';
+    this.pendingPrereqMessage = '';
+    const commentaire = prompt('Commentaire administratif (optionnel) :') || undefined;
+    this.soutenanceService.adminValidePrerequisDossier(dossier.doctorantId, valide, commentaire).subscribe({
+      next: res => {
+        if (res.errors && res.errors.length > 0) {
+          this.pendingPrereqError = res.errors[0].message;
+          return;
+        }
+        this.pendingPrereqMessage = valide ? 'Validation administrative enregistrée.' : 'Refus administratif enregistré.';
+        this.pendingPrereqDossiers = this.pendingPrereqDossiers.filter(d => d.doctorantId !== dossier.doctorantId);
+      },
+      error: e => {
+        console.error(e);
+        this.pendingPrereqError = 'Erreur lors de la validation administrative du dossier de prérequis';
+      }
+    });
   }
 
   load() {

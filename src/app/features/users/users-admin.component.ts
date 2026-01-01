@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../components/layout.component';
 import { UsersService, SimpleUser } from '../../core/services/users.service';
-import { SoutenanceService, PrerequisConfigInput, PrerequisSoutenanceConfig } from '../../core/services/soutenance.service';
 
 type UserTab = 'candidats' | 'directeurs' | 'doctorants';
 
@@ -73,7 +72,7 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let d of doctorants" (click)="onSelectDoctorant(d)" [class.selected]="selectedDoctorant?.id === d.id">
+              <tr *ngFor="let d of doctorants">
                 <td>{{ d.firstName }} {{ d.lastName }}</td>
                 <td>{{ d.email }}</td>
                 <td>{{ d.id }}</td>
@@ -81,77 +80,6 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
             </tbody>
           </table>
           <div *ngIf="!loading && doctorants.length === 0" class="info">Aucun doctorant trouvé.</div>
-        </div>
-
-        <div class="card" *ngIf="selectedDoctorant">
-          <div class="card-header">
-            <div>
-              <h3>Modifier les prérequis de {{ selectedDoctorant.firstName }} {{ selectedDoctorant.lastName }}</h3>
-              <span class="hint">Ces informations seront utilisées pour vérifier les demandes de soutenance.</span>
-            </div>
-          </div>
-
-          <div *ngIf="prereqLoading" class="info">Chargement des prérequis...</div>
-
-          <ng-container *ngIf="!prereqLoading && prereqForm">
-            <div class="grid">
-              <div class="field">
-                <label>Publications Q1/Q2 (minimum)</label>
-                <input type="number" min="0" class="input" [(ngModel)]="prereqForm.minPublications" name="minPublications" />
-              </div>
-              <div class="field">
-                <label>Communications / conférences (minimum)</label>
-                <input type="number" min="0" class="input" [(ngModel)]="prereqForm.minCommunications" name="minCommunications" />
-              </div>
-              <div class="field">
-                <label>Heures de formation doctorale (minimum)</label>
-                <input type="number" min="0" class="input" [(ngModel)]="prereqForm.minHeuresFormation" name="minHeuresFormation" />
-              </div>
-              <div class="field">
-                <label>Durée maximale du doctorat (années)</label>
-                <input type="number" min="1" class="input" [(ngModel)]="prereqForm.maxDureeAnnees" name="maxDureeAnnees" />
-              </div>
-            </div>
-
-            <div class="grid grid-docs">
-              <div class="checkbox-field">
-                <label>
-                  <input type="checkbox" [(ngModel)]="prereqForm.requireManuscrit" name="requireManuscrit" />
-                  Manuscrit final obligatoire
-                </label>
-              </div>
-              <div class="checkbox-field">
-                <label>
-                  <input type="checkbox" [(ngModel)]="prereqForm.requireAntiPlagiat" name="requireAntiPlagiat" />
-                  Rapport anti-plagiat obligatoire
-                </label>
-              </div>
-              <div class="checkbox-field">
-                <label>
-                  <input type="checkbox" [(ngModel)]="prereqForm.requireAttestations" name="requireAttestations" />
-                  Attestations de formations obligatoires
-                </label>
-              </div>
-              <div class="checkbox-field">
-                <label>
-                  <input type="checkbox" [(ngModel)]="prereqForm.requireDemandeManuscrite" name="requireDemandeManuscrite" />
-                  Demande manuscrite obligatoire
-                </label>
-              </div>
-            </div>
-
-            <div class="actions">
-              <button type="button" class="btn secondary" (click)="resetPrerequis()" [disabled]="saving || !selectedDoctorant">
-                Annuler
-              </button>
-              <button type="button" class="btn primary" (click)="onSavePrerequis()" [disabled]="saving || !prereqForm">
-                Enregistrer
-              </button>
-            </div>
-
-            <div class="err" *ngIf="error">{{ error }}</div>
-            <div class="msg" *ngIf="success">{{ success }}</div>
-          </ng-container>
         </div>
       </div>
     </app-layout>
@@ -366,16 +294,13 @@ export class UsersAdminComponent {
 
   activeTab: UserTab = 'doctorants';
 
-  selectedDoctorant: SimpleUser | null = null;
-  prereqForm: PrerequisConfigInput | null = null;
-
   loading = false;
   prereqLoading = false;
   saving = false;
   error = '';
   success = '';
 
-  constructor(private users: UsersService, private soutenance: SoutenanceService) {
+  constructor(private users: UsersService) {
     this.reload();
   }
 
@@ -422,9 +347,6 @@ export class UsersAdminComponent {
       next: list => {
         this.doctorants = list || [];
         this.loading = false;
-        if (!this.selectedDoctorant && this.doctorants.length > 0) {
-          this.onSelectDoctorant(this.doctorants[0]);
-        }
       },
       error: () => {
         this.loading = false;
@@ -433,89 +355,4 @@ export class UsersAdminComponent {
     });
   }
 
-  private defaultPrerequis(doctorantId: string): PrerequisConfigInput {
-    return {
-      doctorantId,
-      minPublications: 2,
-      minCommunications: 2,
-      minHeuresFormation: 200,
-      maxDureeAnnees: 6,
-      requireManuscrit: true,
-      requireAntiPlagiat: true,
-      requireAttestations: true,
-      requireDemandeManuscrite: true
-    };
-  }
-
-  onSelectDoctorant(user: SimpleUser) {
-    this.selectedDoctorant = user;
-    this.prereqLoading = true;
-    this.error = '';
-    this.success = '';
-
-    const doctorantId = user.id;
-
-    this.soutenance.getPrerequisConfig(doctorantId).subscribe({
-      next: res => {
-        const cfg: PrerequisSoutenanceConfig | null = res.data?.prerequisConfigForDoctorant ?? null;
-        if (cfg) {
-          this.prereqForm = {
-            doctorantId: cfg.doctorantId,
-            minPublications: cfg.minPublications,
-            minCommunications: cfg.minCommunications,
-            minHeuresFormation: cfg.minHeuresFormation,
-            maxDureeAnnees: cfg.maxDureeAnnees,
-            requireManuscrit: cfg.requireManuscrit,
-            requireAntiPlagiat: cfg.requireAntiPlagiat,
-            requireAttestations: cfg.requireAttestations,
-            requireDemandeManuscrite: cfg.requireDemandeManuscrite
-          };
-        } else {
-          this.prereqForm = this.defaultPrerequis(doctorantId);
-        }
-        this.prereqLoading = false;
-      },
-      error: () => {
-        this.prereqForm = this.defaultPrerequis(doctorantId);
-        this.prereqLoading = false;
-        this.error = 'Erreur lors du chargement des prérequis.';
-      }
-    });
-  }
-
-  resetPrerequis() {
-    if (this.selectedDoctorant) {
-      this.onSelectDoctorant(this.selectedDoctorant);
-    }
-  }
-
-  onSavePrerequis() {
-    if (!this.selectedDoctorant || !this.prereqForm) {
-      return;
-    }
-    this.saving = true;
-    this.error = '';
-    this.success = '';
-
-    const input: PrerequisConfigInput = {
-      ...this.prereqForm,
-      doctorantId: this.selectedDoctorant.id
-    };
-
-    this.soutenance.savePrerequisConfig(input).subscribe({
-      next: res => {
-        this.saving = false;
-        if (res.errors && res.errors.length > 0) {
-          this.error = res.errors[0].message;
-          return;
-        }
-        this.success = 'Prérequis enregistrés.';
-        this.prereqForm = input;
-      },
-      error: () => {
-        this.saving = false;
-        this.error = "Erreur lors de l'enregistrement des prérequis.";
-      }
-    });
-  }
 }
