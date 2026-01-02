@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
   styles: [`
     .header {
       height: 64px;
-      background-color: var(--secondary);
+      background: rgba(2, 6, 23, 0.78);
       color: var(--secondary-foreground);
       padding: 0 1.75rem;
       display: flex;
@@ -24,6 +24,8 @@ import { Router } from '@angular/router';
       width: 100%;
       position: relative;
       z-index: 10;
+      border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(14px);
     }
 
     .logo {

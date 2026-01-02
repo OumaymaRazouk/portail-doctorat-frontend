@@ -91,9 +91,11 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
       align-items: center;
       padding: 1rem 1.25rem;
       border-radius: 16px;
-      background: linear-gradient(90deg, #1d4ed8, #4f46e5);
-      color: #f9fafb;
+      background: rgba(2, 6, 23, 0.35);
+      color: rgba(229, 231, 235, 0.92);
       margin-bottom: 1.25rem;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(14px);
     }
 
     .hero-text h2 {
@@ -109,13 +111,19 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
     }
 
     .btn-refresh {
-      background: #f9fafb;
-      color: #1f2937;
+      background: rgba(56, 189, 248, 0.20);
+      color: rgba(229, 231, 235, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.28);
       border-radius: 999px;
       border: none;
       padding: 0.4rem 0.9rem;
       font-size: 0.85rem;
       cursor: pointer;
+    }
+
+    .btn-refresh:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
     }
 
     .stats-row {
@@ -126,30 +134,33 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
     }
 
     .stat-card {
-      background: #ffffff;
+      background: var(--card-bg);
       border-radius: 12px;
       padding: 0.75rem 1rem;
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(14px);
     }
 
     .stat-label {
       font-size: 0.8rem;
-      color: #6b7280;
+      color: rgba(229, 231, 235, 0.62);
       margin-bottom: 0.25rem;
     }
 
     .stat-value {
       font-size: 1.2rem;
       font-weight: 600;
-      color: #111827;
+      color: rgba(229, 231, 235, 0.92);
     }
 
     .tabs {
       display: inline-flex;
       border-radius: 999px;
-      background: #e5e7eb;
+      background: rgba(2, 6, 23, 0.35);
       padding: 0.15rem;
       margin-bottom: 1rem;
+      border: 1px solid var(--border-color);
     }
 
     .tab {
@@ -159,21 +170,23 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
       border-radius: 999px;
       font-size: 0.85rem;
       cursor: pointer;
-      color: #4b5563;
+      color: rgba(229, 231, 235, 0.75);
     }
 
     .tab.active {
-      background: #ffffff;
-      color: #111827;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+      background: rgba(20, 184, 166, 0.22);
+      color: rgba(20, 184, 166, 0.95);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
       font-weight: 600;
     }
 
     .card {
-      background: #ffffff;
+      background: var(--card-bg);
       border-radius: 12px;
       padding: 1rem 1.25rem;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(14px);
       margin-bottom: 1rem;
     }
 
@@ -186,7 +199,7 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
 
     .hint {
       font-size: 0.8rem;
-      color: #6b7280;
+      color: rgba(229, 231, 235, 0.62);
     }
 
     .table {
@@ -196,17 +209,27 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
 
     th, td {
       padding: 0.5rem 0.75rem;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid var(--border-color);
       text-align: left;
       font-size: 0.85rem;
     }
 
+    th {
+      background: rgba(2, 6, 23, 0.55);
+      color: rgba(229, 231, 235, 0.75);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    td { color: rgba(229, 231, 235, 0.85); }
+
     tr.selected {
-      background: #eff6ff;
+      background: rgba(20, 184, 166, 0.12);
     }
 
     tr:hover {
-      background: #f9fafb;
+      background: rgba(148, 163, 184, 0.06);
       cursor: pointer;
     }
 
@@ -220,16 +243,24 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
     .field label {
       display: block;
       font-size: 0.8rem;
-      color: #4b5563;
+      color: rgba(229, 231, 235, 0.75);
       margin-bottom: 0.2rem;
     }
 
     .input {
       width: 100%;
-      border-radius: 8px;
-      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
       padding: 0.4rem 0.6rem;
       font-size: 0.85rem;
+      background: rgba(2, 6, 23, 0.45);
+      color: rgba(229, 231, 235, 0.9);
+      outline: none;
+    }
+
+    .input:focus {
+      border-color: rgba(20, 184, 166, 0.65);
+      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.18);
     }
 
     .grid-docs {
@@ -238,7 +269,7 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
 
     .checkbox-field label {
       font-size: 0.85rem;
-      color: #374151;
+      color: rgba(229, 231, 235, 0.75);
     }
 
     .checkbox-field input {
@@ -260,30 +291,31 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
     }
 
     .btn.primary {
-      background: #4f46e5;
-      color: #ffffff;
+      background: var(--primary);
+      color: var(--primary-foreground);
     }
 
     .btn.secondary {
-      background: #e5e7eb;
-      color: #111827;
+      background: rgba(56, 189, 248, 0.20);
+      color: rgba(229, 231, 235, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.28);
     }
 
     .info {
       font-size: 0.85rem;
-      color: #4b5563;
+      color: rgba(229, 231, 235, 0.62);
     }
 
     .err {
       margin-top: 0.5rem;
       font-size: 0.85rem;
-      color: #b91c1c;
+      color: rgba(239, 68, 68, 0.95);
     }
 
     .msg {
       margin-top: 0.5rem;
       font-size: 0.85rem;
-      color: #166534;
+      color: rgba(34, 197, 94, 0.95);
     }
   `]
 })

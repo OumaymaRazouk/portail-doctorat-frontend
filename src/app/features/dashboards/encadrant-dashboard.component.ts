@@ -54,6 +54,8 @@ import { Router } from '@angular/router';
       box-shadow: var(--shadow-soft);
       padding: 1.5rem 1.75rem;
       margin-bottom: 1.5rem;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(14px);
     }
 
     .table {
@@ -72,13 +74,17 @@ import { Router } from '@angular/router';
     }
 
     th {
-      background: #f9fafb;
+      background: rgba(2, 6, 23, 0.55);
       font-weight: 600;
       text-align: left;
       text-transform: uppercase;
       letter-spacing: 0.03em;
       font-size: 0.8rem;
+      color: rgba(229, 231, 235, 0.75);
     }
+
+    td { color: rgba(229, 231, 235, 0.82); }
+    tbody tr:hover { background: rgba(148, 163, 184, 0.06); }
 
     .btn {
       background: var(--primary);
@@ -98,8 +104,12 @@ import { Router } from '@angular/router';
       font-size: 0.78rem;
     }
 
-    .btn.secondary { background: var(--info); }
-    .btn.danger { background: var(--danger); }
+    .btn.secondary {
+      background: rgba(56, 189, 248, 0.20);
+      color: rgba(229, 231, 235, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+    }
+    .btn.danger { background: rgba(239, 68, 68, 0.20); color: rgba(229, 231, 235, 0.92); border: 1px solid rgba(239, 68, 68, 0.25); }
 
     .btn:hover {
       transform: translateY(-1px);
@@ -110,25 +120,26 @@ import { Router } from '@angular/router';
       display: inline-block;
       padding: 0.2rem 0.7rem;
       border-radius: 999px;
-      background: #e5e7eb;
+      background: rgba(148, 163, 184, 0.14);
       font-size: 0.7rem;
       font-weight: 500;
+      color: rgba(229, 231, 235, 0.75);
     }
 
-    .badge.ok { background:#dcfce7; color:#166534; }
-    .badge.warn { background:#fef9c3; color:#854d0e; }
-    .badge.err { background:#fee2e2; color:#991b1b; }
+    .badge.ok { background: rgba(34, 197, 94, 0.18); color: rgba(34, 197, 94, 0.95); }
+    .badge.warn { background: rgba(245, 158, 11, 0.18); color: rgba(245, 158, 11, 0.95); }
+    .badge.err { background: rgba(239, 68, 68, 0.18); color: rgba(239, 68, 68, 0.95); }
 
     .msg {
       margin-top: 0.5rem;
       font-size: 0.85rem;
-      color: #166534;
+      color: rgba(34, 197, 94, 0.95);
     }
 
     .err {
       margin-top: 0.5rem;
       font-size: 0.85rem;
-      color: #b91c1c;
+      color: rgba(239, 68, 68, 0.95);
     }
   `]
 })

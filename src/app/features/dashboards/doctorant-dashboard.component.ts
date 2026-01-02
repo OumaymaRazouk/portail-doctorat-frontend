@@ -145,9 +145,13 @@ import { SoutenanceService, SoutenanceStatus } from '../../core/services/soutena
       font-weight: 500;
       transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
     }
-    .btn.secondary { background: var(--info); }
-    .btn.danger { background: var(--danger); }
-    .btn.danger:hover { background:#b91c1c; }
+    .btn.secondary {
+      background: rgba(56, 189, 248, 0.20);
+      color: rgba(229, 231, 235, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+    }
+    .btn.danger { background: rgba(239, 68, 68, 0.20); color: rgba(229, 231, 235, 0.92); border: 1px solid rgba(239, 68, 68, 0.25); }
+    .btn.danger:hover { filter: brightness(1.05); }
     .btn.small { padding:6px 11px; font-size: 0.8rem; }
     .btn:hover {
       transform: translateY(-1px);
@@ -157,15 +161,16 @@ import { SoutenanceService, SoutenanceStatus } from '../../core/services/soutena
       margin-bottom: 20px;
       padding: 16px 18px;
       border-radius: 18px;
-      background: linear-gradient(135deg, rgba(79, 70, 229, 0.03), rgba(14, 165, 233, 0.04));
-      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(2, 6, 23, 0.35);
+      border: 1px solid var(--border-color);
       box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(14px);
     }
     .section-title {
       margin: 0 0 12px 0;
       font-size: 1.1rem;
       font-weight: 600;
-      color: #111827;
+      color: var(--card-foreground);
     }
     .steps {
       display: flex;
@@ -186,15 +191,15 @@ import { SoutenanceService, SoutenanceStatus } from '../../core/services/soutena
       width: 26px;
       height: 26px;
       border-radius: 999px;
-      background: rgba(79, 70, 229, 0.1);
-      color: #4f46e5;
+      background: rgba(148, 163, 184, 0.12);
+      color: rgba(248, 250, 252, 0.78);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 600;
       font-size: 0.9rem;
       flex-shrink: 0;
-      box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.4);
+      box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.25);
     }
     .step-body {
       flex: 1;
@@ -214,38 +219,38 @@ import { SoutenanceService, SoutenanceStatus } from '../../core/services/soutena
       width: 12px;
       height: 12px;
       border-radius: 999px;
-      background: #e5e7eb;
+      background: rgba(148, 163, 184, 0.35);
     }
-    .steps .step:nth-child(1) .step-title::before { background: #bfdbfe; }
-    .steps .step:nth-child(2) .step-title::before { background: #a5b4fc; }
-    .steps .step:nth-child(3) .step-title::before { background: #facc15; }
+    .steps .step:nth-child(1) .step-title::before { background: rgba(56, 189, 248, 0.65); }
+    .steps .step:nth-child(2) .step-title::before { background: rgba(20, 184, 166, 0.65); }
+    .steps .step:nth-child(3) .step-title::before { background: rgba(245, 158, 11, 0.75); }
     .step-status {
       font-size: 0.85rem;
-      color: #4b5563;
+      color: rgba(229, 231, 235, 0.72);
     }
     .step.done .step-index {
-      background: #dcfce7;
-      color: #166534;
-      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.5);
+      background: rgba(34, 197, 94, 0.18);
+      color: rgba(34, 197, 94, 0.95);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
     }
     .step.current .step-index {
-      background: #dbeafe;
-      color: #1d4ed8;
-      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.6);
+      background: rgba(20, 184, 166, 0.22);
+      color: rgba(20, 184, 166, 0.95);
+      box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.45);
     }
     .step.disabled .step-index {
-      background: #e5e7eb;
-      color: #6b7280;
+      background: rgba(148, 163, 184, 0.10);
+      color: rgba(229, 231, 235, 0.45);
       box-shadow: none;
     }
     .step.disabled .step-status {
-      color: #9ca3af;
+      color: rgba(229, 231, 235, 0.4);
     }
     .step-link {
       display: inline-block;
       margin-top: 4px;
       font-size: 0.8rem;
-      color: #2563eb;
+      color: rgba(56, 189, 248, 0.95);
       text-decoration: underline;
       cursor: pointer;
     }
@@ -264,7 +269,7 @@ import { SoutenanceService, SoutenanceStatus } from '../../core/services/soutena
       width: 150px;
       font-size: 0.8rem;
       font-weight: 500;
-      color: #374151;
+      color: rgba(229, 231, 235, 0.7);
     }
     .status-track {
       position: relative;
@@ -281,7 +286,7 @@ import { SoutenanceService, SoutenanceStatus } from '../../core/services/soutena
       right: 12px;
       top: 22px;
       height: 2px;
-      background: #e5e7eb;
+      background: rgba(148, 163, 184, 0.22);
       z-index: 0;
     }
     .status-step {
@@ -297,9 +302,9 @@ import { SoutenanceService, SoutenanceStatus } from '../../core/services/soutena
       width: 26px;
       height: 26px;
       border-radius: 999px;
-      border: 2px solid #d1d5db;
-      background: #f9fafb;
-      color: #6b7280;
+      border: 2px solid rgba(148, 163, 184, 0.25);
+      background: rgba(2, 6, 23, 0.55);
+      color: rgba(229, 231, 235, 0.7);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -308,43 +313,43 @@ import { SoutenanceService, SoutenanceStatus } from '../../core/services/soutena
     }
     .status-step-label {
       font-size: 0.7rem;
-      color: #4b5563;
+      color: rgba(229, 231, 235, 0.6);
       text-align: center;
       max-width: 80px;
       word-break: break-word;
     }
     .status-step.past .status-step-circle {
-      background: #22c55e;
-      border-color: #16a34a;
-      color: #ffffff;
+      background: rgba(34, 197, 94, 0.95);
+      border-color: rgba(34, 197, 94, 0.75);
+      color: rgba(2, 6, 23, 0.92);
     }
     .status-step.current .status-step-circle {
-      background: #2563eb;
-      border-color: #1d4ed8;
-      color: #ffffff;
-      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+      background: var(--primary);
+      border-color: rgba(20, 184, 166, 0.85);
+      color: var(--primary-foreground);
+      box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.25);
     }
     .status-step.current.final-ok .status-step-circle {
-      background: #22c55e;
-      border-color: #16a34a;
-      color: #ffffff;
+      background: rgba(34, 197, 94, 0.95);
+      border-color: rgba(34, 197, 94, 0.75);
+      color: rgba(2, 6, 23, 0.92);
       box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35);
     }
     .status-step.current.final-ko .status-step-circle {
-      background: #ef4444;
-      border-color: #b91c1c;
-      color: #ffffff;
+      background: rgba(239, 68, 68, 0.95);
+      border-color: rgba(239, 68, 68, 0.70);
+      color: rgba(2, 6, 23, 0.92);
       box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35);
     }
     .status-step.future .status-step-circle {
-      background: #e5e7eb;
-      border-color: #d1d5db;
-      color: #6b7280;
+      background: rgba(148, 163, 184, 0.14);
+      border-color: rgba(148, 163, 184, 0.18);
+      color: rgba(229, 231, 235, 0.5);
     }
     .status-step.none .status-step-circle {
-      background: #f3f4f6;
-      border-color: #e5e7eb;
-      color: #9ca3af;
+      background: rgba(148, 163, 184, 0.08);
+      border-color: rgba(148, 163, 184, 0.12);
+      color: rgba(229, 231, 235, 0.35);
     }
     .table {
       width:100%;
@@ -356,23 +361,27 @@ import { SoutenanceService, SoutenanceStatus } from '../../core/services/soutena
     }
     th, td { padding:10px 12px; border-bottom:1px solid var(--border-color); }
     th {
-      background:#f9fafb;
+      background: rgba(2, 6, 23, 0.55);
       text-align:left;
       font-weight:600;
       font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 0.03em;
+      color: rgba(229, 231, 235, 0.75);
     }
+    td { color: rgba(229, 231, 235, 0.82); }
+    tbody tr:hover { background: rgba(148, 163, 184, 0.06); }
     .badge {
       padding:4px 9px;
       border-radius:999px;
-      background:#e5e7eb;
+      background: rgba(148, 163, 184, 0.14);
       font-size:11px;
       font-weight:500;
+      color: rgba(229, 231, 235, 0.75);
     }
-    .badge.ok { background:#dcfce7; color:#166534; }
-    .badge.warn { background:#fef9c3; color:#854d0e; }
-    .badge.err { background:#fee2e2; color:#991b1b; }
+    .badge.ok { background: rgba(34, 197, 94, 0.18); color: rgba(34, 197, 94, 0.95); }
+    .badge.warn { background: rgba(245, 158, 11, 0.18); color: rgba(245, 158, 11, 0.95); }
+    .badge.err { background: rgba(239, 68, 68, 0.18); color: rgba(239, 68, 68, 0.95); }
   `]
 })
 export class DoctorantDashboardComponent {

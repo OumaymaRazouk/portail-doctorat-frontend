@@ -127,15 +127,21 @@ import { InscriptionDTO, InscriptionService } from '../../core/services/inscript
       padding: 1.5rem 1.75rem;
       box-shadow: var(--shadow-soft);
       margin-bottom: 1.25rem;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(14px);
     }
-    .card.error { border:1px solid #fecaca; color:#991b1b; background:#fef2f2; }
+    .card.error {
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: rgba(239, 68, 68, 0.95);
+      background: rgba(239, 68, 68, 0.10);
+    }
     .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
     .section { margin-top:12px; }
-    .section h3 { margin:0 0 8px; font-size:15px; }
+    .section h3 { margin:0 0 8px; font-size:15px; color: rgba(248, 250, 252, 0.92); }
     .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px 16px; }
     .col-2 { grid-column:span 2; }
-    .label { display:block; font-size:12px; color:#6b7280; margin-bottom:2px; }
-    .value { font-size:14px; color:#111827; word-break:break-word; }
+    .label { display:block; font-size:12px; color: rgba(248, 250, 252, 0.60); margin-bottom:2px; }
+    .value { font-size:14px; color: rgba(248, 250, 252, 0.86); word-break:break-word; }
     .btn {
       background: var(--primary);
       color: var(--primary-foreground);
@@ -147,14 +153,14 @@ import { InscriptionDTO, InscriptionService } from '../../core/services/inscript
       font-weight: 500;
       transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
     }
-    .btn.secondary { background: var(--info); }
+    .btn.secondary { background: rgba(56, 189, 248, 0.20); color: rgba(248, 250, 252, 0.92); border: 1px solid rgba(56, 189, 248, 0.28); }
     .btn.secondary:hover {
       transform: translateY(-1px);
       box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
     }
     .actions-docs .actions-row { display:flex; flex-wrap:wrap; gap:8px; }
     .attachments { list-style:none; padding-left:0; margin:0; display:flex; flex-direction:column; gap:4px; }
-    .attachments .link { background:none; border:0; padding:0; color:#2563eb; text-decoration:underline; font-size:14px; cursor:pointer; text-align:left; }
+    .attachments .link { background:none; border:0; padding:0; color: rgba(56, 189, 248, 0.95); text-decoration:underline; font-size:14px; cursor:pointer; text-align:left; }
   `]
 })
 export class InscriptionDetailComponent {

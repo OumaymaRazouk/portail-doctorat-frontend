@@ -40,7 +40,7 @@ import { HasRoleDirective } from '../../shared/directives/has-role.directive';
     .sidebar {
       width: 240px;
       min-width: 240px;
-      background-color: #020617;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.70));
       color: var(--secondary-foreground);
       padding: 1.25rem 1.5rem;
       border-right: 1px solid rgba(15, 23, 42, 0.6);
@@ -63,7 +63,7 @@ import { HasRoleDirective } from '../../shared/directives/has-role.directive';
 
     .nav-link {
       display: block;
-      color: #e5e7eb;
+      color: rgba(248, 250, 252, 0.82);
       text-decoration: none;
       padding: 10px 14px;
       border-radius: 999px;
@@ -73,14 +73,14 @@ import { HasRoleDirective } from '../../shared/directives/has-role.directive';
     }
 
     .nav-link:hover {
-      color: #f9fafb;
-      background-color: rgba(37, 99, 235, 0.2);
+      color: rgba(248, 250, 252, 0.95);
+      background-color: rgba(20, 184, 166, 0.16);
       transform: translateX(2px);
     }
 
     .nav-link.active {
-      color: #f9fafb;
-      background-color: rgba(37, 99, 235, 0.9);
+      color: rgba(2, 6, 23, 0.92);
+      background-color: rgba(20, 184, 166, 0.85);
       font-weight: 600;
     }
   `]

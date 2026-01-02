@@ -17,6 +17,7 @@ export class LoginComponent {
   errorMessage = '';
   showPassword = false;
   rememberMe = false;
+  demoRole: 'DOCTORANT' | 'DIRECTEUR' | 'ADMIN' | null = null;
 
   constructor(private auth: AuthService, private router: Router) {
     console.log('LoginComponent loaded');

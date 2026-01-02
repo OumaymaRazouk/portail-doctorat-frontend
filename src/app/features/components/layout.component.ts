@@ -27,7 +27,7 @@ import {FooterComponent} from './footer.component';
       flex-direction: column;
       min-height: 100vh;
       width: 100%;
-      background: var(--background);
+      background: transparent;
     }
     
     .layout-body { 
@@ -41,17 +41,23 @@ import {FooterComponent} from './footer.component';
       background: var(--card-bg);
       border-radius: 18px; 
       box-shadow: var(--shadow-soft);
-      margin: 24px;
+      margin: 24px auto;
+      width: calc(100% - 48px);
+      max-width: 1240px;
       padding: 2rem 2.25rem;
       min-height: calc(100vh - 140px);
       overflow-y: auto;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(14px);
     }
     
     .page-title {
       margin: 0 0 1.5rem 0;
-      color: #2d3748;
+      color: var(--card-foreground);
       font-size: 1.75rem;
       font-weight: 600;
+      letter-spacing: 0.01em;
+      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
     }
   `]
 })

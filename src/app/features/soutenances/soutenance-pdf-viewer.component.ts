@@ -27,14 +27,14 @@ import pdfjsWorker from 'pdfjs-dist/build/pdf.worker?url';
     </app-layout>
   `,
   styles: [
-    `.viewer-page { background:#f3f4f6; min-height:100vh; padding:16px; box-sizing:border-box; }
-     .toolbar { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
-     .btn { background:#4f46e5; color:#fff; border:0; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:13px; }
-     .btn:hover { background:#4338ca; }
-     .info { font-size:14px; color:#374151; word-break:break-all; }
-     .body { background:#ffffff; border-radius:12px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,0.06); max-height:calc(100vh - 120px); overflow-y:auto; }
-     .status { font-size:14px; color:#4b5563; }
-     .status.error { color:#b91c1c; }
+    `.viewer-page { background: transparent; min-height:100vh; padding:16px; box-sizing:border-box; }
+     .toolbar { display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
+     .btn { background: var(--primary); color: var(--primary-foreground); border:0; border-radius:999px; padding:8px 12px; cursor:pointer; font-size:13px; font-weight:600; }
+     .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35); }
+     .info { font-size:14px; color: rgba(248, 250, 252, 0.75); word-break:break-all; }
+     .body { background: var(--card-bg); border-radius:16px; padding:16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-soft); backdrop-filter: blur(14px); max-height:calc(100vh - 120px); overflow-y:auto; }
+     .status { font-size:14px; color: rgba(248, 250, 252, 0.70); }
+     .status.error { color: rgba(239, 68, 68, 0.95); }
     `]
 })
 export class SoutenancePdfViewerComponent {

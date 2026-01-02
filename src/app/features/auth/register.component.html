@@ -1,0 +1,150 @@
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <div class="auth-badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" class="auth-badge-icon" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 7.5a3 3 0 013-3h10a3 3 0 013 3v9a3 3 0 01-3 3H7a3 3 0 01-3-3v-9Z" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M5 8l7 5 7-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <h1 class="auth-title">Créer un compte</h1>
+      <p class="auth-subtitle">Rejoignez le portail doctorat</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="auth-alert" role="alert">
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="onRegister()" class="auth-form">
+      <div class="grid-2">
+        <div class="field">
+          <label for="firstName">Prénom</label>
+          <div class="input-wrap">
+            <span class="input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 21a8 8 0 10-16 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M12 13a4 4 0 100-8 4 4 0 000 8Z" stroke="currentColor" stroke-width="1.6"/>
+              </svg>
+            </span>
+            <input
+              id="firstName"
+              [(ngModel)]="form.firstName"
+              name="firstName"
+              class="input"
+              placeholder="Votre prénom"
+              [disabled]="isLoading"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="lastName">Nom</label>
+          <div class="input-wrap">
+            <span class="input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 21a8 8 0 10-16 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M12 13a4 4 0 100-8 4 4 0 000 8Z" stroke="currentColor" stroke-width="1.6"/>
+              </svg>
+            </span>
+            <input
+              id="lastName"
+              [(ngModel)]="form.lastName"
+              name="lastName"
+              class="input"
+              placeholder="Votre nom"
+              [disabled]="isLoading"
+              required
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <div class="input-wrap">
+          <span class="input-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 7.5a3 3 0 013-3h10a3 3 0 013 3v9a3 3 0 01-3 3H7a3 3 0 01-3-3v-9Z" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M5 8l7 5 7-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <input
+            id="email"
+            [(ngModel)]="form.email"
+            name="email"
+            type="email"
+            class="input"
+            placeholder="votre.email@exemple.com"
+            [disabled]="isLoading"
+            required
+          >
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <div class="input-wrap">
+          <span class="input-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7.5 11V8.5a4.5 4.5 0 019 0V11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M6.5 11h11a2 2 0 012 2v5a2 2 0 01-2 2h-11a2 2 0 01-2-2v-5a2 2 0 012-2Z" stroke="currentColor" stroke-width="1.6"/>
+            </svg>
+          </span>
+          <input
+            id="password"
+            [(ngModel)]="form.password"
+            name="password"
+            [type]="showPassword ? 'text' : 'password'"
+            class="input"
+            placeholder="••••••••"
+            [disabled]="isLoading"
+            required
+          >
+          <button type="button" class="icon-btn" (click)="showPassword = !showPassword" [disabled]="isLoading" aria-label="Afficher/masquer mot de passe">
+            <svg *ngIf="!showPassword" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7Z" stroke="currentColor" stroke-width="1.6"/>
+            </svg>
+            <svg *ngIf="showPassword" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 4l18 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M6.2 6.8C4 8.7 2.5 12 2.5 12s3.5 7 9.5 7c2 0 3.7-.6 5.1-1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M9.2 9.3A3.5 3.5 0 0012 15.5c.6 0 1.1-.1 1.6-.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M17.8 17.2C20 15.3 21.5 12 21.5 12s-3.5-7-9.5-7c-1.2 0-2.4.3-3.4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="roles">Type de compte</label>
+        <div class="input-wrap">
+          <span class="input-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 3l8 4v6c0 5-3.4 7.7-8 9-4.6-1.3-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <select id="roles" [(ngModel)]="form.roles" name="roles" class="input" [disabled]="isLoading">
+            <option [ngValue]="['CANDIDAT']">Candidat au doctorat</option>
+            <option [ngValue]="['DIRECTEUR']">Directeur de thèse</option>
+            <option [ngValue]="['PERSONNEL_ADMINISTRATIF']">Personnel administratif</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="primary-btn" [disabled]="isLoading">
+        {{ isLoading ? 'Création en cours...' : 'Créer mon compte' }}
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>
+        Déjà inscrit ?
+        <a routerLink="/login" class="link">Se connecter</a>
+      </p>
+    </div>
+
+  </div>
+</div>

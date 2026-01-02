@@ -13,11 +13,47 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
   template: `
   <div class="page">
     <div class="card">
-      <h2>Nouvelle réinscription</h2>
+      <div class="form-header">
+        <h2>Nouvelle réinscription</h2>
+        <p class="form-subtitle">Remplissez le formulaire pour créer votre réinscription annuelle</p>
+      </div>
+
+      <div class="form-stepper">
+        <button type="button" class="form-step" (click)="setStep(0)" [class.active]="currentStep === 0" [class.done]="currentStep > 0">
+          <div class="form-step-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="form-step-label">Informations<br>personnelles</div>
+        </button>
+        <button type="button" class="form-step" (click)="setStep(1)" [class.active]="currentStep === 1" [class.done]="currentStep > 1">
+          <div class="form-step-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 19V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M8 5V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M16 5V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M4 11h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="form-step-label">Informations<br>académiques</div>
+        </button>
+        <button type="button" class="form-step" (click)="setStep(2)" [class.active]="currentStep === 2" [class.done]="false">
+          <div class="form-step-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="form-step-label">Documents</div>
+        </button>
+      </div>
 
       <form (ngSubmit)="onSubmit()" class="form">
-        <div class="section">
-          <h3>Données d'identité (pré-remplies et verrouillées après pré-remplissage)</h3>
+        <div id="re-step-personal" [hidden]="currentStep !== 0">
+          <div class="section">
+            <h3>Données d'identité (pré-remplies et verrouillées après pré-remplissage)</h3>
           <div class="row">
             <label for="doctorantId">ID Doctorant</label>
             <input id="doctorantId" name="doctorantId" [(ngModel)]="form.doctorantId" required class="input" [readonly]="true" />
@@ -53,10 +89,10 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
             <label for="sujetThese">Sujet de thèse</label>
             <input id="sujetThese" name="sujetThese" [(ngModel)]="form.sujetThese" required class="input" [readonly]="lockedAfterPrefill" />
           </div>
-        </div>
+          </div>
 
-        <div class="section">
-          <h3>Mises à jour de contact</h3>
+          <div class="section">
+            <h3>Mises à jour de contact</h3>
           <div class="row">
             <label for="telephone">Téléphone</label>
             <input id="telephone" name="telephone" [(ngModel)]="form.telephone" required class="input" />
@@ -69,10 +105,12 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
             <label for="adresse">Adresse complète</label>
             <input id="adresse" name="adresse" [(ngModel)]="form.adresse" required class="input" />
           </div>
+          </div>
         </div>
 
-        <div class="section">
-          <h3>Informations complémentaires</h3>
+        <div id="re-step-academic" [hidden]="currentStep !== 1">
+          <div class="section">
+            <h3>Informations complémentaires</h3>
           <div class="row">
             <label for="nationalite">Nationalité</label>
             <input id="nationalite" name="nationalite" [(ngModel)]="form.nationalite" required class="input" />
@@ -97,10 +135,10 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
             <label for="resumeThese">Résumé de la thèse (max 500 mots)</label>
             <textarea id="resumeThese" name="resumeThese" [(ngModel)]="form.resumeThese" maxlength="500" rows="4" class="input"></textarea>
           </div>
-        </div>
+          </div>
 
-        <div class="section">
-          <h3>Avancement de la thèse (N-1)</h3>
+          <div class="section">
+            <h3>Avancement de la thèse (N-1)</h3>
           <div class="row">
             <label for="rapportAvancement">Résumé du rapport d'avancement</label>
             <textarea id="rapportAvancement" name="rapportAvancement" [(ngModel)]="form.rapportAvancement" rows="4" class="input"></textarea>
@@ -117,10 +155,12 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
             <label for="heuresFormationCumulees">Heures de formation cumulées</label>
             <input id="heuresFormationCumulees" name="heuresFormationCumulees" [(ngModel)]="form.heuresFormationCumulees" class="input" />
           </div>
+          </div>
         </div>
 
-        <div class="section">
-          <h3>Pièces justificatives (PDF/JPG)</h3>
+        <div id="re-step-docs" [hidden]="currentStep !== 2">
+          <div class="section">
+            <h3>Pièces justificatives (PDF/JPG)</h3>
           <div class="row">
             <label>Rapport d'avancement annuel</label>
             <input type="file" accept=".pdf,image/*" (change)="onDiplomeSelected($event)" />
@@ -137,11 +177,16 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
             <label>Autre justificatif (optionnel)</label>
             <input type="file" accept=".pdf,image/*" (change)="onCinSelected($event)" />
           </div>
+          </div>
         </div>
 
-        <div class="row actions" style="display:flex; gap:8px; align-items:center;">
-          <button type="submit" class="btn" [disabled]="submitting || uploading">Enregistrer le brouillon</button>
-          <button type="button" class="btn secondary" (click)="onPrefill()">Pré-remplir depuis N-1</button>
+        <div class="wizard-actions">
+          <button type="button" class="btn secondary" (click)="prevStep()" [disabled]="currentStep === 0">Précédent</button>
+          <button type="button" class="btn" (click)="nextStep()" *ngIf="currentStep < 2">Suivant</button>
+          <ng-container *ngIf="currentStep === 2">
+            <button type="submit" class="btn" [disabled]="submitting || uploading">Enregistrer le brouillon</button>
+            <button type="button" class="btn secondary" (click)="onPrefill()">Pré-remplir depuis N-1</button>
+          </ng-container>
         </div>
       </form>
 
@@ -158,32 +203,74 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
       justify-content: center;
       align-items: flex-start;
       padding: 24px;
-      background: var(--background);
+      background: transparent;
     }
 
     .card {
       width: 100%;
-      max-width: 820px;
+      max-width: 960px;
       background: var(--card-bg);
       border-radius: 18px;
-      padding: 1.75rem 2rem;
+      padding: 2rem 2.5rem;
       box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(14px);
     }
 
-    h2 { margin: 0 0 16px; }
+    h2 { margin: 0; color: rgba(248, 250, 252, 0.92); }
 
-    .form { display: flex; flex-direction: column; gap: 12px; }
+    .form { display: flex; flex-direction: column; gap: 18px; }
 
-    .row { display: flex; flex-direction: column; gap: 6px; }
+    .section {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+    }
 
-    label { font-size: 13px; color: #4a5568; font-weight: 500; }
+    .section h3 {
+      grid-column: 1 / -1;
+      margin: 0;
+      font-size: 0.95rem;
+      color: rgba(248, 250, 252, 0.88);
+    }
+
+    .row { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+
+    label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: rgba(248, 250, 252, 0.82);
+      font-weight: 600;
+    }
+
+    label::before {
+      content: '';
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: inset 0 1px 0 rgba(248, 250, 252, 0.06);
+      flex-shrink: 0;
+    }
 
     .input {
       padding: 10px 12px;
       border: 1px solid var(--border-color);
       border-radius: 10px;
       font-size: 14px;
-      background: #ffffff;
+      background: rgba(2, 6, 23, 0.45);
+      color: rgba(248, 250, 252, 0.92);
+      outline: none;
+    }
+
+    .input:focus {
+      border-color: rgba(20, 184, 166, 0.65);
+      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.18);
     }
 
     .btn {
@@ -199,35 +286,60 @@ import { UsersService, SimpleUser } from '../../core/services/users.service';
       transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
     }
 
-    .btn.secondary { background: var(--info); }
+    .btn.secondary { background: rgba(56, 189, 248, 0.20); color: rgba(248, 250, 252, 0.92); border: 1px solid rgba(56, 189, 248, 0.28); }
+
+    .wizard-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .wizard-actions .btn {
+      margin-top: 0;
+      min-width: 160px;
+    }
 
     .btn:hover {
       transform: translateY(-1px);
       box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
     }
 
-    .section {
-      margin-top: 12px;
-      border-top: 1px solid #e5e7eb;
-      padding-top: 12px;
-    }
-
-    .section h3 {
-      margin: 0 0 8px;
-      font-size: 14px;
-      color: #111827;
-    }
-
     .actions { margin-top: 8px; }
+
+    .form .actions {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
 
     .footer {
       margin-top: 16px;
       text-align: right;
       font-size: 0.9rem;
     }
+
+    .footer a { color: rgba(56, 189, 248, 0.95); }
+
+    @media (max-width: 980px) {
+      .section { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .form .actions { justify-content: stretch; }
+    }
+
+    @media (max-width: 640px) {
+      .section { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 980px) { .wizard-actions { flex-direction: column; } }
+    @media (max-width: 640px) { .wizard-actions { flex-direction: column; } }
+    @media (max-width: 640px) { .card { padding: var(--form-card-padding-mobile); } }
   `]
 })
 export class CreateReinscriptionComponent {
+  currentStep = 0;
+  private stepIds = ['re-step-personal', 're-step-academic', 're-step-docs'];
   encadrants: SimpleUser[] = [];
   form: CreateInscriptionRequest = {
     doctorantId: '',
@@ -261,6 +373,29 @@ export class CreateReinscriptionComponent {
   cinFile?: File;
   submitting = false;
   uploading = false;
+
+  setStep(step: number) {
+    const next = Math.max(0, Math.min(2, step));
+    this.currentStep = next;
+    this.scrollToCurrentStep();
+  }
+
+  nextStep() {
+    this.setStep(this.currentStep + 1);
+  }
+
+  prevStep() {
+    this.setStep(this.currentStep - 1);
+  }
+
+  private scrollToCurrentStep() {
+    if (typeof document === 'undefined') return;
+    const id = this.stepIds[this.currentStep];
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
 
   constructor(
     private service: InscriptionService,
