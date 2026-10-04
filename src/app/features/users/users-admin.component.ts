@@ -53,6 +53,75 @@ type UserTab = 'candidats' | 'directeurs' | 'doctorants';
         </button>
       </div>
 
+      <div *ngIf="activeTab==='directeurs'">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>Créer un Directeur</h3>
+              <span class="hint">Seul le personnel administratif peut créer et activer un compte Directeur.</span>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label>Nom</label>
+              <input class="input" [(ngModel)]="createForm.lastName" />
+            </div>
+            <div class="field">
+              <label>Prénom</label>
+              <input class="input" [(ngModel)]="createForm.firstName" />
+            </div>
+            <div class="field">
+              <label>Email institutionnel</label>
+              <input class="input" [(ngModel)]="createForm.email" />
+            </div>
+            <div class="field">
+              <label>Établissement</label>
+              <input class="input" [(ngModel)]="createForm.etablissement" />
+            </div>
+            <div class="field">
+              <label>Spécialité / Laboratoire</label>
+              <input class="input" [(ngModel)]="createForm.specialite" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn primary" (click)="createDirector()" [disabled]="saving">Créer et générer le lien d'activation</button>
+            <button *ngIf="activationLink" type="button" class="btn secondary" (click)="copyLink()">Copier le lien</button>
+          </div>
+          <div class="msg" *ngIf="activationLink">Lien d'activation: {{ activationLink }}</div>
+          <div class="msg" *ngIf="success">{{ success }}</div>
+          <div class="err" *ngIf="error">{{ error }}</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>Liste des Directeurs</h3>
+              <span class="hint">Comptes créés avec rôle DIRECTEUR</span>
+            </div>
+          </div>
+          <div *ngIf="loading" class="info">Chargement des directeurs...</div>
+          <table class="table" *ngIf="!loading && directeurs.length > 0">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Identifiant</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let d of directeurs">
+                <td>{{ d.firstName }} {{ d.lastName }}</td>
+                <td>{{ d.email }}</td>
+                <td>{{ d.id }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="!loading && directeurs.length === 0" class="info">Aucun directeur trouvé.</div>
+        </div>
+      </div>
+
       <div *ngIf="activeTab==='doctorants'">
         <div class="card">
           <div class="card-header">
@@ -332,6 +401,16 @@ export class UsersAdminComponent {
   error = '';
   success = '';
 
+  // Formulaire création de directeur (Option B - lien d'activation)
+  createForm = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    etablissement: '',
+    specialite: ''
+  };
+  activationLink = '';
+
   constructor(private users: UsersService) {
     this.reload();
   }
@@ -387,4 +466,40 @@ export class UsersAdminComponent {
     });
   }
 
+  createDirector() {
+    this.error = '';
+    this.success = '';
+    this.activationLink = '';
+    const { firstName, lastName, email } = this.createForm;
+    if (!firstName || !lastName || !email) {
+      this.error = 'Veuillez remplir nom, prénom et email.';
+      return;
+    }
+    this.saving = true;
+    this.users.createDirector(this.createForm).subscribe({
+      next: (res: any) => {
+        this.saving = false;
+        if (res?.success && res.data) {
+          const origin = window.location.origin;
+          this.activationLink = `${origin}/activate?token=${res.data.activationToken}`;
+          this.success = `Directeur créé. Identifiant: ${res.data.identifiant}`;
+          this.createForm = { firstName: '', lastName: '', email: '', etablissement: '', specialite: '' };
+          this.reload();
+        } else {
+          this.error = res?.message || 'Création échouée.';
+        }
+      },
+      error: (e: any) => {
+        this.saving = false;
+        this.error = e?.error?.message || 'Erreur lors de la création.';
+      }
+    });
+  }
+
+  copyLink() {
+    if (!this.activationLink) return;
+    navigator.clipboard.writeText(this.activationLink).then(() => {
+      this.success = 'Lien copié dans le presse-papiers.';
+    });
+  }
 }

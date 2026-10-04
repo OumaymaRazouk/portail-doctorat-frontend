@@ -19,6 +19,9 @@ export class AuthService {
   refresh(refreshToken: string) {
     return this.api.post<AuthResponse>(`${environment.endpoints.auth}/refresh`, { refreshToken });
   }
+  activate(dto: { token: string; newPassword: string }) {
+    return this.api.post<AuthResponse>(`${environment.endpoints.auth}/activate`, dto);
+  }
   me() {
     return this.api.get<{id: string; email: string; roles: Role[]; firstName?: string; lastName?: string}>(`${environment.endpoints.users}/me`);
   }

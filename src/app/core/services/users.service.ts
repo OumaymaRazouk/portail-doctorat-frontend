@@ -25,4 +25,11 @@ export class UsersService {
   listCandidats() {
     return this.api.get<SimpleUser[]>(`${environment.endpoints.users}/candidats`);
   }
+
+  createDirector(payload: { firstName: string; lastName: string; email: string; etablissement?: string; specialite?: string }) {
+    return this.api.post<{ success: boolean; message: string; data?: { id: number; identifiant: string; email: string; activationToken: string; activationExpiresAt: string } }>(
+      `${environment.endpoints.users}/admin/directeurs`,
+      payload
+    );
+  }
 }

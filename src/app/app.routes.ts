@@ -21,11 +21,13 @@ import { UsersAdminComponent } from './features/users/users-admin.component';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { Role } from './core/models/auth.models';
+import { ActivateAccountComponent } from './features/auth/activate-account.component';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'activate', component: ActivateAccountComponent },
   { path: 'forbidden', component: ForbiddenComponent },
 
   { path: 'dashboard/doctorant', component: DoctorantDashboardComponent, canActivate: [authGuard, roleGuard], data: { roles: ['CANDIDAT','DOCTORANT'] as Role[] } },

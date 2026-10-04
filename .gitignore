@@ -41,3 +41,11 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Logs / JVM crash files
+*.log
+hs_err_pid*
+
+# Environment files
+.env
+.env.*
